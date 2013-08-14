@@ -18,7 +18,6 @@ package darknetsim;
 simple DarknetSimpleNode extends DarknetBaseNode {
     parameters:
 //        @class(DarknetSimpleNode);
-        string dest_id;
-        string ping_id;
+        string pingID;
     
 }

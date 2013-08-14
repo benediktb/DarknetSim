@@ -19,7 +19,7 @@ void DarknetSimpleNode::initialize(int stage) {
     DarknetBaseNode::initialize(stage);
 
     if (stage == 5) {
-        std::vector<std::string> v = cStringTokenizer(par("ping_id")).asVector();
+        std::vector<std::string> v = cStringTokenizer(par("pingID")).asVector();
         for(std::vector<std::string>::iterator iter = v.begin(); iter != v.end(); iter++) {
             cMessage *timer = new PingTimer((*iter));
                 scheduleAt(1.0, timer);

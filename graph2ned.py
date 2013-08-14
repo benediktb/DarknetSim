@@ -59,11 +59,14 @@ sim-time-limit = 8s
 **.udpAppType="FloodingNode"
 #**.udpAppType="HotpotatoNode"
 
-**.udpApp[0].local_port=%s
+**.udpApp[0].localPort=%s
 %s
 
-**.host0.udpApp[0].ping_id="host4"
-**.udpApp[0].ping_id=""
+**.host0.udpApp[0].pingID="host4"
+**.udpApp[0].pingID=""
+
+**.udpApp[0].resendTimer=0.5
+**.udpApp[0].resendCounter=3
 
 # IP settings
 **.routingFile=""
@@ -96,11 +99,11 @@ def ned_make_router_connections(nodes):
 def ini_conf_hosts(nodes):
     ret = []
     for node in nodes.keys():
-        ret.append("**.host"+node+".udpApp[0].node_id=\"host"+node+"\"")
+        ret.append("**.host"+node+".udpApp[0].nodeID=\"host"+node+"\"")
         peers=[]
         for peer in nodes[node]:
             peers.append("host"+peer+":"+str(default_port))
-        ret.append("**.host"+node+".udpApp[0].dest_id=\""+(" ".join(peers))+"\"")
+        ret.append("**.host"+node+".udpApp[0].destID=\""+(" ".join(peers))+"\"")
     return ret
 
 

@@ -32,13 +32,13 @@ void DarknetBaseNode::addPeer(std::string nodeID, IPvXAddress& destAddr, int des
 void DarknetBaseNode::initialize(int stage) {
     switch (stage) {
     case 0:
-        nodeID = par("node_id").stdstringValue();
-        localPort = par("local_port");
+        nodeID = par("nodeID").stdstringValue();
+        localPort = par("localPort");
         bindToPort(localPort);
         break;
     case 3: {
         const char* port_delimiter = ":";
-        std::vector<std::string> v = cStringTokenizer(par("dest_id")).asVector();
+        std::vector<std::string> v = cStringTokenizer(par("destID")).asVector();
         for(std::vector<std::string>::iterator iter = v.begin(); iter != v.end(); iter++) {
             std::vector<std::string> peer_tuple = cStringTokenizer((*iter).c_str(),port_delimiter).asVector(); //split <destID>:<destPort>
             if(peer_tuple.size() == 2) {

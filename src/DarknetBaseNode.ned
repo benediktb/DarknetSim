@@ -17,9 +17,9 @@ package darknetsim;
 
 simple DarknetBaseNode like inet.applications.udpapp.UDPApp {
     parameters:
-        int local_port;
-        string node_id;
-        
+        int localPort;
+        string nodeID;
+        string destID;
     gates:
 	    input udpIn;
 	    output udpOut;

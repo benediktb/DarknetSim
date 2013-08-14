@@ -1,0 +1,11 @@
+#folders
+simulations/*
+out/*
+
+#files
+Makefile*
+
+#dotfiles
+.cproject
+.oppbuildspec
+.nedfolders

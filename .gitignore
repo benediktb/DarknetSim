@@ -1,11 +1,14 @@
 #folders
 simulations/*
 out/*
+src/results
 
 #files
 Makefile*
+src/DarknetSim
 
 #dotfiles
 .cproject
 .oppbuildspec
 .nedfolders
+src/.tkenvrc

@@ -23,8 +23,8 @@ Define_Module(FloodingNode);
 std::vector<DarknetPeer*> FloodingNode::findNextHop(DarknetMessage* msg) {
     //TODO: could be improved
     std::vector<DarknetPeer*> list;
-    for(std::map<std::string, DarknetConnection*>::iterator it = connections.begin(); it != connections.end(); it++) {
-        list.push_back(peers[it->first]);
+    for(std::set<std::string>::iterator it = connected.begin(); it != connected.end(); it++) {
+        list.push_back(peers[*it]);
     }
     EV <<  nodeID << ": findNextHop size: " << list.size();
     return list;

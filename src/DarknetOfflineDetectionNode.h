@@ -30,7 +30,8 @@ protected:
 
     virtual void initialize(int stage);
     virtual void handleDarknetMessage(DarknetMessage* msg);
-//    virtual bool sendMessage(DarknetMessage* msg);
+    virtual void connectPeer(std::string nodeID);
+    virtual void handleIncomingMessage(DarknetMessage* msg);
     virtual void handleSelfMessage(cMessage* msg);
     virtual void sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr, int destPort);
 

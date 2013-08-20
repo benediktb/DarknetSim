@@ -27,11 +27,6 @@ typedef struct {
 } DarknetPeer;
 
 typedef struct {
-    std::string nodeID;
-    simtime_t lastSeen;
-} DarknetConnection;
-
-typedef struct {
     long packetId;
     simtime_t eventTime;
     std::string srcId;
@@ -48,7 +43,7 @@ protected:
     std::string nodeID;
     int localPort;
     std::map<std::string, DarknetPeer*> peers;
-    std::map<std::string, DarknetConnection*> connections;
+    std::set<std::string> connected;
     std::map<long, std::string > forwardedIdTable; // map for forwarded MessageIDs -> source nodeID
     std::list<long> outstandingResponses; // list for responses we are waiting for
     std::vector<seenPacket*> receivedPackets;

@@ -31,7 +31,6 @@ protected:
     virtual int numInitStages() const { return 6; }
     virtual void initialize(int stage);
     virtual void handleSelfMessage(cMessage* msg);
-    virtual void handleIncomingMessage(DarknetMessage* msg);
     virtual void connectPeer(std::string nodeID);
 };
 

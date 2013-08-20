@@ -14,6 +14,7 @@
 // 
 
 #include "DarknetSimpleNode.h"
+#include "algorithm"
 
 void DarknetSimpleNode::initialize(int stage) {
     DarknetBaseNode::initialize(stage);
@@ -28,10 +29,9 @@ void DarknetSimpleNode::initialize(int stage) {
 }
 
 void DarknetSimpleNode::connectPeer(std::string nodeID) {
-    DarknetMessage *dm = new DarknetMessage();
-    dm->setType(DM_CON_SYN);
-    dm->setDestNodeID(nodeID.c_str());
-    sendDirectMessage(dm);
+    if(connected.find(nodeID) != connected.end()) {
+        connected.insert(nodeID);
+    }
 };
 
 
@@ -42,33 +42,3 @@ void DarknetSimpleNode::handleSelfMessage(cMessage *msg) {
     }
     delete msg;
 }
-
-void DarknetSimpleNode::handleIncomingMessage(DarknetMessage *msg) {
-    switch(msg->getType()) {
-    case DM_CON_SYN: {
-        if(peers.find(msg->getSrcNodeID()) != peers.end()) {
-            EV << "recieved CON_SYN from: " << msg->getSrcNodeID() << endl;
-            DarknetMessage *ack = new DarknetMessage();
-            ack->setType(DM_CON_ACK);
-            ack->setDestNodeID(msg->getSrcNodeID());
-            sendDirectMessage(ack);
-        }
-        delete msg;
-        break;
-    }
-    case DM_CON_ACK: {
-        DarknetConnection *dc = new DarknetConnection;
-        dc->nodeID = msg->getSrcNodeID();
-        dc->lastSeen=0; //TODO fix
-        connections.insert(std::pair<std::string,DarknetConnection*>(msg->getSrcNodeID(),dc));
-        EV << "connection to " << dc->nodeID << "established" << endl;
-        delete msg;
-        break;
-    }
-    default:
-        DarknetBaseNode::handleIncomingMessage(msg);
-       break;
-    }
-}
-
-

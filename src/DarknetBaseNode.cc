@@ -148,6 +148,10 @@ void DarknetBaseNode::handleIncomingMessage(DarknetMessage *msg) {
     }
 }
 
+/*
+ * if TTL is > 0; insert the messages treeID in forwardedIdTable and forward it (after decrement TTL)
+ * drop it if TTL is = 0
+ */
 void DarknetBaseNode::forwardMessage(DarknetMessage* msg) {
     int ttl = msg->getTTL();
     if(ttl > 0) {

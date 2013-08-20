@@ -19,15 +19,15 @@
 Define_Module(HotpotatoNode);
 
 std::vector<DarknetPeer*> HotpotatoNode::findNextHop(DarknetMessage* msg) {
-    if(!connections.size()) { // peer list empty -> raise exception? (TODO)
+    if(!connected.size()) { // peer list empty -> raise exception?
         EV << "ERROR: empty peer list!";
         return std::vector<DarknetPeer*>(0);
     }
-    if(peers.find(msg->getDestNodeID()) != peers.end() and connections.find(msg->getDestNodeID()) != connections.end()) {
+    if(connected.count(msg->getDestNodeID()) == 1 and peers.count(msg->getDestNodeID()) == 1) {
         return std::vector<DarknetPeer*>(1,peers[msg->getDestNodeID()]);
     }else {
-        std::map<std::string, DarknetConnection*>::iterator iter = connections.begin();
-        std::advance(iter, dblrand() * connections.size());
-        return std::vector<DarknetPeer*>(1,peers[iter->first]);
+        std::set<std::string>::iterator iter = connected.begin();
+        std::advance(iter, dblrand() * connected.size());
+        return std::vector<DarknetPeer*>(1,peers[*iter]);
     }
 }

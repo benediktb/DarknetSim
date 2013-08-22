@@ -19,7 +19,7 @@ simple DarknetBaseNode like inet.applications.udpapp.UDPApp {
     parameters:
         int localPort;
         string nodeID;
-        string destID;
+        string destinations;
     gates:
 	    input udpIn;
 	    output udpOut;

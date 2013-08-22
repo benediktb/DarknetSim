@@ -37,10 +37,9 @@ void DarknetBaseNode::initialize(int stage) {
         bindToPort(localPort);
         break;
     case 3: {
-        const char* port_delimiter = ":";
-        std::vector<std::string> v = cStringTokenizer(par("destID")).asVector();
+        std::vector<std::string> v = cStringTokenizer(par("destinations")).asVector();
         for(std::vector<std::string>::iterator iter = v.begin(); iter != v.end(); iter++) {
-            std::vector<std::string> peer_tuple = cStringTokenizer((*iter).c_str(),port_delimiter).asVector(); //split <destID>:<destPort>
+            std::vector<std::string> peer_tuple = cStringTokenizer((*iter).c_str(),":").asVector(); //split <destID>:<destPort>
             if(peer_tuple.size() == 2) {
                 std::string nodeID = peer_tuple[0];
                 std::istringstream convert(peer_tuple[1]);

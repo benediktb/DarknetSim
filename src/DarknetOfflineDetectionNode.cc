@@ -20,7 +20,8 @@ void DarknetOfflineDetectionNode::initialize(int stage) {
     DarknetSimpleNode::initialize(stage);
     if (stage == 4) {
         resendCounter = par("resendCounter");
-        resendTimer = par("resendTimer");
+        resendTimerMean = par("resendTimerMean");
+        resendTimerVariance = par("resendTimerVariance");
     }
 }
 
@@ -49,7 +50,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg) {
     }
     case DM_CON_ACK: {
         std::string nodeID = msg->getSrcNodeID();
-        if(connected.find(nodeID) != connected.end()) {
+        if(connected.count(nodeID) == 0) {
             connected.insert(nodeID);
             EV << "connection to " << nodeID << "established" << endl;
         }
@@ -103,9 +104,9 @@ void DarknetOfflineDetectionNode::handleSelfMessage(cMessage* msg) {
             DarknetSimpleNode::sendPacket(dup, *destAddr, destPort);
             rcvack_waiting[mID].second++;
             dm->par("origMsgID").setLongValue(dup->getId());
-            rcvack_waiting.insert(std::pair<long, std::pair<DarknetMessage*,int> >(dup->getId(),rcvack_waiting[mID]));
+            rcvack_waiting.insert(std::pair<long, std::pair<DarknetMessage*,int> >(dup->getId(), rcvack_waiting[mID]));
             rcvack_waiting.erase(mID);
-            scheduleAt(simTime() + resendTimer,dm);
+            scheduleAt(simTime() + normal(resendTimerMean,resendTimerVariance), dm);
         } else { /* too many resends; delete resendTimer and remove peer from the connected list */
             EV << "stop resendTimer for message: " << msg << " and remove the peer" << endl;
             connected.erase(dm->getDestNodeID());
@@ -126,8 +127,8 @@ void DarknetOfflineDetectionNode::sendPacket(DarknetMessage* pkg, IPvXAddress& d
     dup->par("destAddr").setPointerValue(&destAddr);
     dup->par("destPort").setLongValue(destPort);
     EV << "start resend timer for message: (id:" << pkg->getId() << ", DestID: "<<pkg->getDestNodeID() << ")"  << endl;
-    rcvack_waiting.insert(std::pair<long, std::pair<DarknetMessage*,int> >(pkg->getId(),std::pair<DarknetMessage*,int>(dup,0)));
-    scheduleAt(simTime() + resendTimer,dup);
+    rcvack_waiting.insert(std::pair<long, std::pair<DarknetMessage*,int> >(pkg->getId(), std::pair<DarknetMessage*,int>(dup,0)));
+    scheduleAt(simTime() + normal(resendTimerMean, resendTimerVariance), dup);
 
     DarknetSimpleNode::sendPacket(pkg, destAddr, destPort);
 }

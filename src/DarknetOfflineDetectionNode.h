@@ -25,7 +25,8 @@ public:
 
 protected:
     std::map<long, std::pair<DarknetMessage*, int> > rcvack_waiting;
-    double resendTimer;
+    double resendTimerMean;
+    double resendTimerVariance;
     int resendCounter;
 
     virtual void initialize(int stage);

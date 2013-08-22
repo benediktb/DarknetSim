@@ -18,6 +18,8 @@ package darknetsim;
 simple DarknetSimpleNode extends DarknetBaseNode {
     parameters:
 //        @class(DarknetSimpleNode);
-        string pingID;
+        string requestTargets;
+        double requestIntervalMean @unit(s) = default(1s);
+        double requestIntervalVariance = default(0.2);
     
 }

@@ -18,7 +18,8 @@ package darknetsim;
 simple DarknetOfflineDetectionNode extends DarknetSimpleNode {
     parameters:
 //        @class(DarknetOfflineDetectionNode);
-        double resendTimer;
-        int resendCounter;
+        double resendTimerMean @unit(s) = default(0.5s);
+        double resendTimerVariance = default(0.1); 
+        int resendCounter = default(3);
     
 }

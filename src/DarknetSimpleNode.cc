@@ -20,10 +20,14 @@ void DarknetSimpleNode::initialize(int stage) {
     DarknetBaseNode::initialize(stage);
 
     if (stage == 5) {
-        std::vector<std::string> v = cStringTokenizer(par("pingID")).asVector();
+        std::vector<std::string> v = cStringTokenizer(par("requestTargets")).asVector();
+        double requestIntervalMean = par("requestIntervalMean");
+        double requestIntervalVariance = par("requestIntervalVariance");
+        simtime_t sendAt = simTime();
         for(std::vector<std::string>::iterator iter = v.begin(); iter != v.end(); iter++) {
             cMessage *timer = new PingTimer((*iter));
-                scheduleAt(1.0, timer);
+            sendAt += normal(requestIntervalMean,requestIntervalVariance);
+            scheduleAt(sendAt, timer);
         }
     }
 }

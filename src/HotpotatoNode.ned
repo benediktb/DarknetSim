@@ -18,5 +18,6 @@ package darknetsim;
 simple HotpotatoNode extends DarknetOfflineDetectionNode {
     parameters:
         @class(HotpotatoNode);
+        int requestFanout = default(1);
     
 }

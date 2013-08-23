@@ -23,8 +23,14 @@ public:
     HotpotatoNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode() {};
    virtual ~HotpotatoNode() {};
 protected:
+   int requestFanout;
+   std::set<long> answeredRequests;
 
    virtual std::vector<DarknetPeer*> findNextHop(DarknetMessage* msg);
+   virtual void handleSelfMessage(cMessage *msg);
+   virtual void initialize(int stage);
+   virtual void handleRequest(DarknetMessage* request);
+
 };
 
 #endif /* HOTPOTATONODE_H_ */

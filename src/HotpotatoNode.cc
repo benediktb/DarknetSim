@@ -18,6 +18,13 @@
 
 Define_Module(HotpotatoNode);
 
+void HotpotatoNode::initialize(int stage) {
+    if(stage == 0) {
+        requestFanout = par("requestFanout");
+    }
+    DarknetOfflineDetectionNode::initialize(stage);
+}
+
 std::vector<DarknetPeer*> HotpotatoNode::findNextHop(DarknetMessage* msg) {
     if(!connected.size()) { // peer list empty -> raise exception?
         EV << "ERROR: empty peer list!";
@@ -29,5 +36,32 @@ std::vector<DarknetPeer*> HotpotatoNode::findNextHop(DarknetMessage* msg) {
         std::set<std::string>::iterator iter = connected.begin();
         std::advance(iter, dblrand() * connected.size());
         return std::vector<DarknetPeer*>(1,peers[*iter]);
+    }
+}
+
+/*
+ * send <requestFanout> requests at once, each can travel a different path (since all have different treeIDs)
+ * save the timers ID in RequestMessageID, so only the first request will be answered
+ */
+void HotpotatoNode::handleSelfMessage(cMessage *msg) {
+    if(dynamic_cast<PingTimer*>(msg) != NULL) {
+        EV << "sending PING to: " << msg->getName();
+        DarknetMessage* m;
+        for(int i=0; i<= requestFanout; i++) {
+            m = makeRequest(msg->getName());
+            m->setRequestMessageID(msg->getId());
+            sendMessage(m);
+        }
+        delete msg;
+    }else DarknetOfflineDetectionNode::handleSelfMessage(msg);
+}
+
+/*
+ * only respond to the first request with the same RequestMessageID
+ */
+void HotpotatoNode::handleRequest(DarknetMessage* request) {
+    if(answeredRequests.count(request->getRequestMessageID()) == 0) {
+        answeredRequests.insert(request->getRequestMessageID());
+        DarknetBaseNode::handleRequest(request);
     }
 }

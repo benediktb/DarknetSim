@@ -46,9 +46,6 @@ protected:
     std::set<std::string> connected;
     std::map<long, std::string > forwardedIdTable; // map for forwarded MessageIDs -> source nodeID
     std::list<long> outstandingResponses; // list for responses we are waiting for
-    std::vector<seenPacket*> receivedPackets;
-    std::vector<seenPacket*> sentPackets;
-    std::vector<DarknetMessage*> messageLog;
 
     //things you probably don't have to change
     virtual int numInitStages() const { return 5; }
@@ -58,7 +55,6 @@ protected:
     virtual bool sendMessage(DarknetMessage* msg);
     virtual void handleMessage(cMessage* msg);
     virtual DarknetMessage* makeRequest(std::string nodeID);
-    virtual void finish();
 
 
     //things you probably want to implement or extend

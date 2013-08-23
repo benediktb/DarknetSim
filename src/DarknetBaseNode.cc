@@ -61,7 +61,6 @@ void DarknetBaseNode::initialize(int stage) {
 }
 
 void DarknetBaseNode::sendPacket(DarknetMessage* dmsg, IPvXAddress& destAddr, int destPort) {
-    messageLog.push_back(dmsg->dup());
     sendToUDP(dmsg, localPort, destAddr, destPort);
 }
 
@@ -85,9 +84,6 @@ bool DarknetBaseNode::sendMessage(DarknetMessage* msg) {
     std::vector<DarknetPeer*> destPeers = findNextHop(msg);
     if(/*destPeers != NULL and*/ destPeers.size() > 0) {
         msg->setSrcNodeID(nodeID.c_str());
-        int size = msg->getVisitedNodesArraySize();
-        msg->setVisitedNodesArraySize(size+1);
-        msg->setVisitedNodes(size,this->nodeID.c_str());
         for(std::vector<DarknetPeer*>::iterator iter = destPeers.begin(); iter != destPeers.end(); iter++) {
             sendPacket(msg->dup(),(*iter)->address,(*iter)->port);
         }
@@ -110,7 +106,6 @@ void DarknetBaseNode::handleMessage(cMessage *msg) {
     } else {
         DarknetMessage* dm = dynamic_cast<DarknetMessage*>(msg);
         if( dm != NULL) {
-            messageLog.push_back(dm->dup());
             handleDarknetMessage(dm);
         }
         else {
@@ -194,11 +189,4 @@ DarknetMessage* DarknetBaseNode::makeRequest(std::string nodeID) {
     msg->setType(DM_REQUEST);
     outstandingResponses.push_back(msg->getTreeId());
     return msg;
-}
-
-void DarknetBaseNode::finish() {
-    for(std::vector<DarknetMessage*>::iterator iter = messageLog.begin(); iter != messageLog.end(); iter++) {
-        DarknetMessage* dm = (*iter);
-        EV << nodeID << ": " << dm->getSrcNodeID() << " -> " << dm->getDestNodeID() << " : " << dm->getType() << endl;
-    }
 }

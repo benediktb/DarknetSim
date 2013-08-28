@@ -50,21 +50,16 @@ DarknetMessage::DarknetMessage(const char *name, int kind) : cPacket(name,kind)
     this->srcNodeID_var = 0;
     this->TTL_var = 32;
     this->type_var = 0;
-    visitedNodes_arraysize = 0;
-    this->visitedNodes_var = 0;
     this->requestMessageID_var = 0;
 }
 
 DarknetMessage::DarknetMessage(const DarknetMessage& other) : cPacket(other)
 {
-    visitedNodes_arraysize = 0;
-    this->visitedNodes_var = 0;
     copy(other);
 }
 
 DarknetMessage::~DarknetMessage()
 {
-    delete [] visitedNodes_var;
 }
 
 DarknetMessage& DarknetMessage::operator=(const DarknetMessage& other)
@@ -81,11 +76,6 @@ void DarknetMessage::copy(const DarknetMessage& other)
     this->srcNodeID_var = other.srcNodeID_var;
     this->TTL_var = other.TTL_var;
     this->type_var = other.type_var;
-    delete [] this->visitedNodes_var;
-    this->visitedNodes_var = (other.visitedNodes_arraysize==0) ? NULL : new opp_string[other.visitedNodes_arraysize];
-    visitedNodes_arraysize = other.visitedNodes_arraysize;
-    for (unsigned int i=0; i<visitedNodes_arraysize; i++)
-        this->visitedNodes_var[i] = other.visitedNodes_var[i];
     this->requestMessageID_var = other.requestMessageID_var;
 }
 
@@ -96,8 +86,6 @@ void DarknetMessage::parsimPack(cCommBuffer *b)
     doPacking(b,this->srcNodeID_var);
     doPacking(b,this->TTL_var);
     doPacking(b,this->type_var);
-    b->pack(visitedNodes_arraysize);
-    doPacking(b,this->visitedNodes_var,visitedNodes_arraysize);
     doPacking(b,this->requestMessageID_var);
 }
 
@@ -108,14 +96,6 @@ void DarknetMessage::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->srcNodeID_var);
     doUnpacking(b,this->TTL_var);
     doUnpacking(b,this->type_var);
-    delete [] this->visitedNodes_var;
-    b->unpack(visitedNodes_arraysize);
-    if (visitedNodes_arraysize==0) {
-        this->visitedNodes_var = 0;
-    } else {
-        this->visitedNodes_var = new opp_string[visitedNodes_arraysize];
-        doUnpacking(b,this->visitedNodes_var,visitedNodes_arraysize);
-    }
     doUnpacking(b,this->requestMessageID_var);
 }
 
@@ -157,36 +137,6 @@ int DarknetMessage::getType() const
 void DarknetMessage::setType(int type)
 {
     this->type_var = type;
-}
-
-void DarknetMessage::setVisitedNodesArraySize(unsigned int size)
-{
-    opp_string *visitedNodes_var2 = (size==0) ? NULL : new opp_string[size];
-    unsigned int sz = visitedNodes_arraysize < size ? visitedNodes_arraysize : size;
-    for (unsigned int i=0; i<sz; i++)
-        visitedNodes_var2[i] = this->visitedNodes_var[i];
-    for (unsigned int i=sz; i<size; i++)
-        visitedNodes_var2[i] = 0;
-    visitedNodes_arraysize = size;
-    delete [] this->visitedNodes_var;
-    this->visitedNodes_var = visitedNodes_var2;
-}
-
-unsigned int DarknetMessage::getVisitedNodesArraySize() const
-{
-    return visitedNodes_arraysize;
-}
-
-const char * DarknetMessage::getVisitedNodes(unsigned int k) const
-{
-    if (k>=visitedNodes_arraysize) throw cRuntimeError("Array of size %d indexed by %d", visitedNodes_arraysize, k);
-    return visitedNodes_var[k].c_str();
-}
-
-void DarknetMessage::setVisitedNodes(unsigned int k, const char * visitedNodes)
-{
-    if (k>=visitedNodes_arraysize) throw cRuntimeError("Array of size %d indexed by %d", visitedNodes_arraysize, k);
-    this->visitedNodes_var[k] = visitedNodes;
 }
 
 long DarknetMessage::getRequestMessageID() const
@@ -246,7 +196,7 @@ const char *DarknetMessageDescriptor::getProperty(const char *propertyname) cons
 int DarknetMessageDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 6+basedesc->getFieldCount(object) : 6;
+    return basedesc ? 5+basedesc->getFieldCount(object) : 5;
 }
 
 unsigned int DarknetMessageDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -262,10 +212,9 @@ unsigned int DarknetMessageDescriptor::getFieldTypeFlags(void *object, int field
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
-        FD_ISARRAY | FD_ISEDITABLE,
         FD_ISEDITABLE,
     };
-    return (field>=0 && field<6) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<5) ? fieldTypeFlags[field] : 0;
 }
 
 const char *DarknetMessageDescriptor::getFieldName(void *object, int field) const
@@ -281,10 +230,9 @@ const char *DarknetMessageDescriptor::getFieldName(void *object, int field) cons
         "srcNodeID",
         "TTL",
         "type",
-        "visitedNodes",
         "requestMessageID",
     };
-    return (field>=0 && field<6) ? fieldNames[field] : NULL;
+    return (field>=0 && field<5) ? fieldNames[field] : NULL;
 }
 
 int DarknetMessageDescriptor::findField(void *object, const char *fieldName) const
@@ -295,8 +243,7 @@ int DarknetMessageDescriptor::findField(void *object, const char *fieldName) con
     if (fieldName[0]=='s' && strcmp(fieldName, "srcNodeID")==0) return base+1;
     if (fieldName[0]=='T' && strcmp(fieldName, "TTL")==0) return base+2;
     if (fieldName[0]=='t' && strcmp(fieldName, "type")==0) return base+3;
-    if (fieldName[0]=='v' && strcmp(fieldName, "visitedNodes")==0) return base+4;
-    if (fieldName[0]=='r' && strcmp(fieldName, "requestMessageID")==0) return base+5;
+    if (fieldName[0]=='r' && strcmp(fieldName, "requestMessageID")==0) return base+4;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -313,10 +260,9 @@ const char *DarknetMessageDescriptor::getFieldTypeString(void *object, int field
         "string",
         "int",
         "int",
-        "string",
         "long",
     };
-    return (field>=0 && field<6) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<5) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *DarknetMessageDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -345,7 +291,6 @@ int DarknetMessageDescriptor::getArraySize(void *object, int field) const
     }
     DarknetMessage *pp = (DarknetMessage *)object; (void)pp;
     switch (field) {
-        case 4: return pp->getVisitedNodesArraySize();
         default: return 0;
     }
 }
@@ -364,8 +309,7 @@ std::string DarknetMessageDescriptor::getFieldAsString(void *object, int field, 
         case 1: return oppstring2string(pp->getSrcNodeID());
         case 2: return long2string(pp->getTTL());
         case 3: return long2string(pp->getType());
-        case 4: return oppstring2string(pp->getVisitedNodes(i));
-        case 5: return long2string(pp->getRequestMessageID());
+        case 4: return long2string(pp->getRequestMessageID());
         default: return "";
     }
 }
@@ -384,8 +328,7 @@ bool DarknetMessageDescriptor::setFieldAsString(void *object, int field, int i, 
         case 1: pp->setSrcNodeID((value)); return true;
         case 2: pp->setTTL(string2long(value)); return true;
         case 3: pp->setType(string2long(value)); return true;
-        case 4: pp->setVisitedNodes(i,(value)); return true;
-        case 5: pp->setRequestMessageID(string2long(value)); return true;
+        case 4: pp->setRequestMessageID(string2long(value)); return true;
         default: return false;
     }
 }
@@ -404,9 +347,8 @@ const char *DarknetMessageDescriptor::getFieldStructName(void *object, int field
         NULL,
         NULL,
         NULL,
-        NULL,
     };
-    return (field>=0 && field<6) ? fieldStructNames[field] : NULL;
+    return (field>=0 && field<5) ? fieldStructNames[field] : NULL;
 }
 
 void *DarknetMessageDescriptor::getFieldStructPointer(void *object, int field, int i) const

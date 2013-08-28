@@ -36,6 +36,5 @@ packet DarknetMessage {
     string srcNodeID;
     int TTL = 32;
     int type @enum(DarknetMessageType);
-    string visitedNodes[];
     long requestMessageID; //if this is a Response: the ID of the Message which requested this
 }

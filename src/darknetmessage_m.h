@@ -54,7 +54,6 @@ enum DarknetMessageType {
  *     string srcNodeID;
  *     int TTL = 32;
  *     int type @enum(DarknetMessageType);
- *     string visitedNodes[];
  *     long requestMessageID; 
  * }
  * </pre>
@@ -66,8 +65,6 @@ class DarknetMessage : public ::cPacket
     opp_string srcNodeID_var;
     int TTL_var;
     int type_var;
-    opp_string *visitedNodes_var; // array ptr
-    unsigned int visitedNodes_arraysize;
     long requestMessageID_var;
 
   private:
@@ -95,10 +92,6 @@ class DarknetMessage : public ::cPacket
     virtual void setTTL(int TTL);
     virtual int getType() const;
     virtual void setType(int type);
-    virtual void setVisitedNodesArraySize(unsigned int size);
-    virtual unsigned int getVisitedNodesArraySize() const;
-    virtual const char * getVisitedNodes(unsigned int k) const;
-    virtual void setVisitedNodes(unsigned int k, const char * visitedNodes);
     virtual long getRequestMessageID() const;
     virtual void setRequestMessageID(long requestMessageID);
 };

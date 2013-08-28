@@ -47,6 +47,12 @@ protected:
     std::map<long, std::string > forwardedIdTable; // map for forwarded MessageIDs -> source nodeID
     std::list<long> outstandingResponses; // list for responses we are waiting for
 
+    simsignal_t sigSendDM;
+    simsignal_t sigUnhandledMSG;
+    simsignal_t sigDropTtlExeeded;
+    simsignal_t sigRequestRemainingTTL;
+    simsignal_t sigResponseRemainingTTL;
+
     //things you probably don't have to change
     virtual int numInitStages() const { return 5; }
     virtual void addPeer(std::string nodeID, IPvXAddress& destAddr, int destPort);

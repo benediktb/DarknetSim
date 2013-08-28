@@ -17,6 +17,11 @@ package darknetsim;
 
 simple DarknetBaseNode like inet.applications.udpapp.UDPApp {
     parameters:
+        @statistic[sigSendDM](record=count,vector?);
+        @statistic[sigUnhandledMSG](record=count,vector?);
+        @statistic[sigDropTtlExeeded](record=count,vector?);
+        @statistic[sigRequestRemainingTTL](record=stats,vector?);
+        @statistic[sigResponseRemainingTTL](record=stats,vector?);
         int localPort;
         string nodeID;
         string destinations;

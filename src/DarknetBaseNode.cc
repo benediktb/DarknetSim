@@ -35,6 +35,11 @@ void DarknetBaseNode::initialize(int stage) {
         nodeID = par("nodeID").stdstringValue();
         localPort = par("localPort");
         bindToPort(localPort);
+        sigSendDM = registerSignal("sigSendDM");
+        sigUnhandledMSG = registerSignal("sigUnhandledMSG");
+        sigDropTtlExeeded = registerSignal("sigDropTtlExeeded");
+        sigRequestRemainingTTL = registerSignal("sigRequestRemainingTTL");
+        sigResponseRemainingTTL = registerSignal("sigResponseRemainingTTL");
         break;
     case 3: {
         std::vector<std::string> v = cStringTokenizer(par("destinations")).asVector();
@@ -61,6 +66,7 @@ void DarknetBaseNode::initialize(int stage) {
 }
 
 void DarknetBaseNode::sendPacket(DarknetMessage* dmsg, IPvXAddress& destAddr, int destPort) {
+    emit(sigSendDM,dmsg->getTreeId());
     sendToUDP(dmsg, localPort, destAddr, destPort);
 }
 
@@ -91,8 +97,6 @@ bool DarknetBaseNode::sendMessage(DarknetMessage* msg) {
         return true;
     } else {
         EV << "No next hop found for message: " << msg << endl;
-     //   if(destPeers != NULL)
-            EV << "size of destPeers: " << destPeers.size() << endl;
         //TODO: implement proper default error handling here
         delete msg;
         return false;
@@ -129,16 +133,18 @@ void DarknetBaseNode::handleDarknetMessage(DarknetMessage *msg) {
 void DarknetBaseNode::handleIncomingMessage(DarknetMessage *msg) {
     switch(msg->getType()) {
     case DM_REQUEST:
+        emit(sigRequestRemainingTTL,msg->getTTL());
         handleRequest(msg);
         break;
     case DM_RESPONSE:
-        EV << "host: " << nodeID <<" > recieved PONG from: " << msg->getSrcNodeID() << endl;
+        emit(sigResponseRemainingTTL,msg->getTTL());
+        outstandingResponses.remove(msg->getRequestMessageID());
         delete msg;
         break;
      default:
-       EV << "received unknown DarknetMessage for this node: " << msg << ": " << msg->getType() << endl;
-       delete msg;
-       break;
+        emit(sigUnhandledMSG,msg->getId());
+        delete msg;
+        break;
     }
 }
 
@@ -155,6 +161,7 @@ void DarknetBaseNode::forwardMessage(DarknetMessage* msg) {
     }else {
         // TODO: inform simulator/user of droped message (or at least count it)
         EV << "dropped message";
+        emit(sigDropTtlExeeded,msg->getTreeId());
         delete msg;
     }
 }
@@ -163,14 +170,9 @@ void DarknetBaseNode::forwardMessage(DarknetMessage* msg) {
  * forward a Response to a previously forwarded Message back its path "up"
  */
 void DarknetBaseNode::forwardResponse(DarknetMessage* msg) {
-    //if(midTab.find(msg->getRequestMessageID()) != midTab.end()) {
-        msg->setDestNodeID(forwardedIdTable[msg->getRequestMessageID()].c_str());
-        forwardedIdTable.erase(msg->getRequestMessageID());
-        sendMessage(msg);
-/*    } else { // this should not happen, probably a bug
-        EV << "can not forward message - no entry in midTab found!";
-        delete msg;
-    } */
+    msg->setDestNodeID(forwardedIdTable[msg->getRequestMessageID()].c_str());
+    forwardedIdTable.erase(msg->getRequestMessageID());
+    sendMessage(msg);
 }
 
 void DarknetBaseNode::handleRequest(DarknetMessage* request) {

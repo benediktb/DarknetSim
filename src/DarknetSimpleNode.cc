@@ -33,7 +33,7 @@ void DarknetSimpleNode::initialize(int stage) {
 }
 
 void DarknetSimpleNode::connectPeer(std::string nodeID) {
-    if(connected.find(nodeID) != connected.end()) {
+    if(connected.count(nodeID) == 0) {
         connected.insert(nodeID);
     }
 };

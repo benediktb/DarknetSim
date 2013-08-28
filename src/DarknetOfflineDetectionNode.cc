@@ -18,10 +18,15 @@
 
 void DarknetOfflineDetectionNode::initialize(int stage) {
     DarknetSimpleNode::initialize(stage);
-    if (stage == 4) {
+    switch(stage) {
+    case 0:
+        sigDropResendExeeded = registerSignal("sigDropResendExeeded");
+        break;
+    case 4:
         resendCounter = par("resendCounter");
         resendTimerMean = par("resendTimerMean");
         resendTimerVariance = par("resendTimerVariance");
+        break;
     }
 }
 
@@ -94,23 +99,24 @@ void DarknetOfflineDetectionNode::handleDarknetMessage(DarknetMessage* msg) {
  */
 void DarknetOfflineDetectionNode::handleSelfMessage(cMessage* msg) {
     DarknetMessage* dm = dynamic_cast<DarknetMessage*>(msg);
-    if(dm != NULL and dm->hasPar("origMsgId") and  rcvack_waiting.find(dm->par("origMsgId").longValue()) != rcvack_waiting.end()) {
-        long mID = dm->par("origMsgId").longValue();
+    if(dm != NULL and dm->hasPar("origMsgId")  and rcvack_waiting.count(dm->par("origMsgId").longValue()) == 1) {
+        long msgID = dm->par("origMsgId").longValue();
 
-        if(rcvack_waiting[mID].second < resendCounter) {
+        if(rcvack_waiting[msgID].second < resendCounter) {
             int destPort = (int) dm->par("destPort").longValue();
             IPvXAddress* destAddr = (IPvXAddress*) (dm->par("destAddr").pointerValue());
             DarknetMessage* dup = dm->dup();
             DarknetSimpleNode::sendPacket(dup, *destAddr, destPort);
-            rcvack_waiting[mID].second++;
+            rcvack_waiting[msgID].second++;
             dm->par("origMsgID").setLongValue(dup->getId());
-            rcvack_waiting.insert(std::pair<long, std::pair<DarknetMessage*,int> >(dup->getId(), rcvack_waiting[mID]));
-            rcvack_waiting.erase(mID);
+            rcvack_waiting.insert(std::pair<long, std::pair<DarknetMessage*,int> >(dup->getId(), rcvack_waiting[msgID]));
+            rcvack_waiting.erase(msgID);
             scheduleAt(simTime() + normal(resendTimerMean,resendTimerVariance), dm);
         } else { /* too many resends; delete resendTimer and remove peer from the connected list */
             EV << "stop resendTimer for message: " << msg << " and remove the peer" << endl;
+            emit(sigDropResendExeeded,rcvack_waiting[msgID].first->getTTL());
             connected.erase(dm->getDestNodeID());
-            rcvack_waiting.erase(mID);
+            rcvack_waiting.erase(msgID);
 
             delete dm;
         }

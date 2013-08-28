@@ -28,6 +28,7 @@ protected:
     double resendTimerMean;
     double resendTimerVariance;
     int resendCounter;
+    simsignal_t sigDropResendExeeded;
 
     virtual void initialize(int stage);
     virtual void handleDarknetMessage(DarknetMessage* msg);

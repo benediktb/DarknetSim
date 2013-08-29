@@ -6,6 +6,7 @@ import fileinput
 import re
 import string
 import sys
+import random
 
 pattern = re.compile("^(?P<node>\d+):(?P<edges>(\d+(;\d+)*)?)")
 default_port = 8080
@@ -15,6 +16,10 @@ ignored_lines = []
 
 if len(sys.argv) > 1:
     netname = sys.argv[1]
+    if len(sys.argv) > 2:
+        targetCount = int(sys.argv[2])
+    else:
+        targetCount = 1
 else:
     netname = 'defaultNet'
 
@@ -56,14 +61,14 @@ sim-time-limit = 8s
 
 # UDP Applications
 **.numUdpApps=1 # 0 means no UDP apps active.
-**.udpAppType="FloodingNode"
-#**.udpAppType="HotpotatoNode"
+#**.udpAppType="FloodingNode"
+**.udpAppType="HotpotatoNode"
 
 **.udpApp[0].localPort=%s
 %s
 
-**.host0.udpApp[0].pingID="host4"
-**.udpApp[0].pingID=""
+**.host0.udpApp[0].requestTargets="host67"
+**.udpApp[0].requestTargets=""
 
 **.udpApp[0].resendTimer=0.5
 **.udpApp[0].resendCounter=3
@@ -72,16 +77,9 @@ sim-time-limit = 8s
 **.routingFile=""
 **.ip.procDelay=10us
 
-# ARP configuration
-**.arp.retryTimeout = 1s
-**.arp.retryCount = 3
-**.arp.cacheTimeout = 100s
-**.networkLayer.proxyARP = true  # Host's is hardwired "false"
-
 # NIC configuration in hosts and routers
 **.ppp[*].queueType = "DropTailQueue"
-**.router.ppp[*].queue.frameCapacity = 100 # packets
-**.ppp[*].queue.frameCapacity = 500 # packets
+**.router.ppp[*].queue.frameCapacity = 500 # packets
 """
 
 def ned_make_hosts(nodes):
@@ -103,7 +101,11 @@ def ini_conf_hosts(nodes):
         peers=[]
         for peer in nodes[node]:
             peers.append("host"+peer+":"+str(default_port))
-        ret.append("**.host"+node+".udpApp[0].destID=\""+(" ".join(peers))+"\"")
+        ret.append("**.host"+node+".udpApp[0].destinations=\""+(" ".join(peers))+"\"")
+        targets=[]
+        for x in range(0,targetCount):
+            targets.append("host"+random.choice(nodes.keys()))
+        ret.append("**.host"+node+".udpApp[0].requestTargets=\""+(" ".join(targets))+"\"")
     return ret
 
 

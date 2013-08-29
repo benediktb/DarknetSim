@@ -13,18 +13,18 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef HOTPOTATONODE_H_
-#define HOTPOTATONODE_H_
+#ifndef RANDOMWALKODE_H_
+#define RANDOMWALKNODE_H_
 
 #include "DarknetOfflineDetectionNode.h"
 #include "DarknetSimpleNode.h"
 
-//class HotpotatoNode: public DarknetOfflineDetectionNode {
-class HotpotatoNode: public DarknetSimpleNode {
+//class RandomwalkNode: public DarknetOfflineDetectionNode {
+class RandomwalkNode: public DarknetSimpleNode {
 public:
-//    HotpotatoNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode() {};
-    HotpotatoNode() : DarknetSimpleNode::DarknetSimpleNode() {};
-   virtual ~HotpotatoNode() {};
+//    RandomwalkNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode() {};
+    RandomwalkNode() : DarknetSimpleNode::DarknetSimpleNode() {};
+   virtual ~RandomwalkNode() {};
 protected:
    int requestFanout;
    std::set<long> answeredRequests;
@@ -36,4 +36,4 @@ protected:
 
 };
 
-#endif /* HOTPOTATONODE_H_ */
+#endif /* RANDOMWALKNODE_H_ */

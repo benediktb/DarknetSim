@@ -14,11 +14,11 @@
 // 
 
 //#include <IPAddressResolver.h>
-#include "HotpotatoNode.h"
+#include "RandomwalkNode.h"
 
-Define_Module(HotpotatoNode);
+Define_Module(RandomwalkNode);
 
-void HotpotatoNode::initialize(int stage) {
+void RandomwalkNode::initialize(int stage) {
     if(stage == 0) {
         requestFanout = par("requestFanout");
     }
@@ -26,7 +26,7 @@ void HotpotatoNode::initialize(int stage) {
     DarknetSimpleNode::initialize(stage);
 }
 
-std::vector<DarknetPeer*> HotpotatoNode::findNextHop(DarknetMessage* msg) {
+std::vector<DarknetPeer*> RandomwalkNode::findNextHop(DarknetMessage* msg) {
     if(!connected.size()) { // peer list empty -> raise exception?
         EV << "ERROR: empty peer list!";
         return std::vector<DarknetPeer*>(0);
@@ -44,7 +44,7 @@ std::vector<DarknetPeer*> HotpotatoNode::findNextHop(DarknetMessage* msg) {
  * send <requestFanout> requests at once, each can travel a different path (since all have different treeIDs)
  * save the timers ID in RequestMessageID, so only the first request will be answered
  */
-void HotpotatoNode::handleSelfMessage(cMessage *msg) {
+void RandomwalkNode::handleSelfMessage(cMessage *msg) {
     if(dynamic_cast<PingTimer*>(msg) != NULL) {
         EV << "sending PING to: " << msg->getName();
         DarknetMessage* m;
@@ -61,7 +61,7 @@ void HotpotatoNode::handleSelfMessage(cMessage *msg) {
 /*
  * only respond to the first request with the same RequestMessageID
  */
-void HotpotatoNode::handleRequest(DarknetMessage* request) {
+void RandomwalkNode::handleRequest(DarknetMessage* request) {
     if(answeredRequests.count(request->getRequestMessageID()) == 0) {
         answeredRequests.insert(request->getRequestMessageID());
         DarknetBaseNode::handleRequest(request);

@@ -62,7 +62,7 @@ sim-time-limit = 8s
 # UDP Applications
 **.numUdpApps=1 # 0 means no UDP apps active.
 #**.udpAppType="FloodingNode"
-**.udpAppType="HotpotatoNode"
+**.udpAppType="RandomwalkNode"
 
 **.udpApp[0].localPort=%s
 %s

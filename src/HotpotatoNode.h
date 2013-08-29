@@ -17,10 +17,13 @@
 #define HOTPOTATONODE_H_
 
 #include "DarknetOfflineDetectionNode.h"
+#include "DarknetSimpleNode.h"
 
-class HotpotatoNode: public DarknetOfflineDetectionNode {
+//class HotpotatoNode: public DarknetOfflineDetectionNode {
+class HotpotatoNode: public DarknetSimpleNode {
 public:
-    HotpotatoNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode() {};
+//    HotpotatoNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode() {};
+    HotpotatoNode() : DarknetSimpleNode::DarknetSimpleNode() {};
    virtual ~HotpotatoNode() {};
 protected:
    int requestFanout;

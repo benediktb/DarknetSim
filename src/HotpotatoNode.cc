@@ -22,7 +22,8 @@ void HotpotatoNode::initialize(int stage) {
     if(stage == 0) {
         requestFanout = par("requestFanout");
     }
-    DarknetOfflineDetectionNode::initialize(stage);
+//    DarknetOfflineDetectionNode::initialize(stage);
+    DarknetSimpleNode::initialize(stage);
 }
 
 std::vector<DarknetPeer*> HotpotatoNode::findNextHop(DarknetMessage* msg) {
@@ -47,13 +48,14 @@ void HotpotatoNode::handleSelfMessage(cMessage *msg) {
     if(dynamic_cast<PingTimer*>(msg) != NULL) {
         EV << "sending PING to: " << msg->getName();
         DarknetMessage* m;
-        for(int i=0; i<= requestFanout; i++) {
+        for(int i=0; i< requestFanout; i++) {
             m = makeRequest(msg->getName());
             m->setRequestMessageID(msg->getId());
             sendMessage(m);
         }
         delete msg;
-    }else DarknetOfflineDetectionNode::handleSelfMessage(msg);
+//    }else DarknetOfflineDetectionNode::handleSelfMessage(msg);
+    }else DarknetSimpleNode::handleSelfMessage(msg);
 }
 
 /*

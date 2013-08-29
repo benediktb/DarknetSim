@@ -66,4 +66,5 @@ void HotpotatoNode::handleRequest(DarknetMessage* request) {
         answeredRequests.insert(request->getRequestMessageID());
         DarknetBaseNode::handleRequest(request);
     }
+    else delete request;
 }

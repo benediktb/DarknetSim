@@ -44,7 +44,7 @@ network %s
     submodules:
         configurator: FlatNetworkConfigurator {
             @display("p=24,28;i=block/cogwheel");
-            networkAddress = "23.42.1.0";
+            networkAddress = "23.42.0.0";
             netmask = "255.255.0.0";
         }
         router: Router {
@@ -57,29 +57,19 @@ network %s
 
 tpl_inifile="""[General]
 network = %s
-sim-time-limit = 8s
+**udpApp[0].localPort = %s
 
-# UDP Applications
-**.numUdpApps=1 # 0 means no UDP apps active.
-#**.udpAppType="FloodingNode"
-**.udpAppType="RandomwalkNode"
+include general.ini
 
-**.udpApp[0].localPort=%s
 %s
 
-**.host0.udpApp[0].requestTargets="host67"
-**.udpApp[0].requestTargets=""
+[Config Flooding]
+extends = General
+**.udpAppType = "FloodingNode"
 
-**.udpApp[0].resendTimer=0.5
-**.udpApp[0].resendCounter=3
-
-# IP settings
-**.routingFile=""
-**.ip.procDelay=10us
-
-# NIC configuration in hosts and routers
-**.ppp[*].queueType = "DropTailQueue"
-**.router.ppp[*].queue.frameCapacity = 500 # packets
+[Config Randomwalk]
+extends = General
+**.udpAppType = "RandomwalkNode"
 """
 
 def ned_make_hosts(nodes):
@@ -97,15 +87,15 @@ def ned_make_router_connections(nodes):
 def ini_conf_hosts(nodes):
     ret = []
     for node in nodes.keys():
-        ret.append("**.host"+node+".udpApp[0].nodeID=\"host"+node+"\"")
+        ret.append("**.host"+node+".udpApp[0].nodeID = \"host"+node+"\"")
         peers=[]
         for peer in nodes[node]:
             peers.append("host"+peer+":"+str(default_port))
-        ret.append("**.host"+node+".udpApp[0].destinations=\""+(" ".join(peers))+"\"")
+        ret.append("**.host"+node+".udpApp[0].destinations = \""+(" ".join(peers))+"\"")
         targets=[]
         for x in range(0,targetCount):
             targets.append("host"+random.choice(nodes.keys()))
-        ret.append("**.host"+node+".udpApp[0].requestTargets=\""+(" ".join(targets))+"\"")
+        ret.append("**.host"+node+".udpApp[0].requestTargets = \""+(" ".join(targets))+"\"")
     return ret
 
 

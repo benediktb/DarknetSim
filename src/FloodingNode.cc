@@ -39,7 +39,7 @@ std::vector<DarknetPeer*> FloodingNode::findNextHop(DarknetMessage* msg) {
  * check whether we we have seen msg earlier respectively a duplicate of it
  */
 void FloodingNode::handleDarknetMessage(DarknetMessage* msg) {
-    if(seenMessages.count(msg->getTreeId())) { //already seen?
+    if(seenMessages.count(msg->getTreeId()) == 0) { //already seen?
         seenMessages.insert(msg->getTreeId());
         DarknetSimpleNode::handleDarknetMessage(msg);
     }else {

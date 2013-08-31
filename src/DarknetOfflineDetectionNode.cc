@@ -36,6 +36,7 @@ void DarknetOfflineDetectionNode::initialize(int stage) {
 void DarknetOfflineDetectionNode::connectPeer(std::string nodeID) {
     DarknetMessage *dm = new DarknetMessage();
     dm->setType(DM_CON_SYN);
+    dm->setTTL(defaultTTL);
     dm->setDestNodeID(nodeID.c_str());
     sendDirectMessage(dm);
 }
@@ -47,6 +48,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg) {
             EV << "recieved CON_SYN from: " << msg->getSrcNodeID() << endl;
             DarknetMessage *ack = new DarknetMessage();
             ack->setType(DM_CON_ACK);
+            ack->setTTL(defaultTTL);
             ack->setDestNodeID(msg->getSrcNodeID());
             sendDirectMessage(ack);
         }
@@ -87,6 +89,7 @@ void DarknetOfflineDetectionNode::handleDarknetMessage(DarknetMessage* msg) {
         DarknetMessage* ack = new DarknetMessage();
         ack->setDestNodeID(msg->getSrcNodeID());
         ack->setType(DM_RCVACK);
+        ack->setTTL(defaultTTL);
         ack->setRequestMessageID(msg->getId());
         sendDirectMessage(ack);
         DarknetSimpleNode::handleDarknetMessage(msg);

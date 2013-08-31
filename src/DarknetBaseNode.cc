@@ -35,6 +35,7 @@ void DarknetBaseNode::initialize(int stage) {
         nodeID = par("nodeID").stdstringValue();
         localPort = par("localPort");
         bindToPort(localPort);
+        defaultTTL = par("sigSendDM");
         sigSendDM = registerSignal("sigSendDM");
         sigUnhandledMSG = registerSignal("sigUnhandledMSG");
         sigDropTtlExeeded = registerSignal("sigDropTtlExeeded");
@@ -179,6 +180,7 @@ void DarknetBaseNode::handleRequest(DarknetMessage* request) {
     DarknetMessage *msg = new DarknetMessage();
     msg->setDestNodeID(request->getSrcNodeID());
     msg->setType(DM_RESPONSE);
+    msg->setTTL(defaultTTL);
     msg->setRequestMessageID(request->getTreeId());
     delete request;
     sendMessage(msg);
@@ -189,6 +191,7 @@ DarknetMessage* DarknetBaseNode::makeRequest(std::string nodeID) {
     DarknetMessage *msg = new DarknetMessage();
     msg->setDestNodeID(nodeID.c_str());
     msg->setType(DM_REQUEST);
+    msg->setTTL(defaultTTL);
     outstandingResponses.push_back(msg->getTreeId());
     return msg;
 }

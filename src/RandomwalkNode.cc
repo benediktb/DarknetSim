@@ -64,7 +64,14 @@ void RandomwalkNode::handleSelfMessage(cMessage *msg) {
 void RandomwalkNode::handleRequest(DarknetMessage* request) {
     if(answeredRequests.count(request->getRequestMessageID()) == 0) {
         answeredRequests.insert(request->getRequestMessageID());
-        DarknetBaseNode::handleRequest(request);
+        DarknetMessage *msg = new DarknetMessage();
+        msg->setDestNodeID(request->getSrcNodeID());
+        msg->setType(DM_RESPONSE);
+        msg->setTTL(defaultTTL);
+        msg->setRequestMessageID(request->getTreeId());
+        msg->setTTL(request->getTTL());
+        delete request;
+        sendMessage(msg);
     }
     else delete request;
 }

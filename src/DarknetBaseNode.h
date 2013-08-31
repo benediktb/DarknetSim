@@ -42,6 +42,7 @@ protected:
 
     std::string nodeID;
     int localPort;
+    int defaultTTL;
     std::map<std::string, DarknetPeer*> peers;
     std::set<std::string> connected;
     std::map<long, std::string > forwardedIdTable; // map for forwarded MessageIDs -> source nodeID

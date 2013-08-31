@@ -59,6 +59,9 @@ tpl_inifile="""[General]
 network = %s
 **udpApp[0].localPort = %s
 
+output-vector-file = ${resultdir}/${network}-%s-${configname}-${runnumber}.vec
+output-scalar-file = ${resultdir}/${network}-%s-${configname}-${runnumber}.sca
+
 %s
 
 
@@ -103,7 +106,7 @@ def ini_conf_hosts(nodes):
 nedfile = open(netname+".ned","w")
 nedfile.write(tpl_nedfile % (netname,"\n".join(ned_make_hosts(nodes)),"\n".join(ned_make_router_connections(nodes))))
 nedfile.close()
-inifile = open(netname+".ini","w")
-inifile.write(tpl_inifile % (netname,default_port,"\n".join(ini_conf_hosts(nodes))))
+inifile = open(netname+"-"+str(targetCount)+".ini","w")
+inifile.write(tpl_inifile % (netname,default_port,targetCount,targetCount,"\n".join(ini_conf_hosts(nodes))))
 inifile.close()
 

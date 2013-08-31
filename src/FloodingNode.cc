@@ -20,7 +20,7 @@ Define_Module(FloodingNode);
 
 void FloodingNode::initialize(int stage) {
     if(stage == 0) {
-        sigDropAlreadySeen = par("sigDropAlreadySeen");
+        sigDropAlreadySeen = registerSignal("sigDropAlreadySeen");
     }
     DarknetSimpleNode::initialize(stage);
 }

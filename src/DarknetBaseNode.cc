@@ -139,7 +139,7 @@ void DarknetBaseNode::handleIncomingMessage(DarknetMessage *msg) {
         break;
     case DM_RESPONSE:
         emit(sigResponseRemainingTTL,msg->getTTL());
-        outstandingResponses.remove(msg->getRequestMessageID());
+        outstandingResponses.erase(msg->getRequestMessageID());
         delete msg;
         break;
      default:
@@ -192,6 +192,6 @@ DarknetMessage* DarknetBaseNode::makeRequest(std::string nodeID) {
     msg->setDestNodeID(nodeID.c_str());
     msg->setType(DM_REQUEST);
     msg->setTTL(defaultTTL);
-    outstandingResponses.push_back(msg->getTreeId());
+    outstandingResponses.insert(msg->getTreeId());
     return msg;
 }

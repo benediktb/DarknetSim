@@ -46,7 +46,7 @@ protected:
     std::map<std::string, DarknetPeer*> peers;
     std::set<std::string> connected;
     std::map<long, std::string > forwardedIdTable; // map for forwarded MessageIDs -> source nodeID
-    std::list<long> outstandingResponses; // list for responses we are waiting for
+    std::set<long> outstandingResponses; // list for responses we are waiting for
 
     simsignal_t sigSendDM;
     simsignal_t sigUnhandledMSG;

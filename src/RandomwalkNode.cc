@@ -67,9 +67,8 @@ void RandomwalkNode::handleRequest(DarknetMessage* request) {
         DarknetMessage *msg = new DarknetMessage();
         msg->setDestNodeID(request->getSrcNodeID());
         msg->setType(DM_RESPONSE);
-        msg->setTTL(defaultTTL);
+        msg->setTTL(defaultTTL - request->getTTL()); // TTL is set to the path length on the forward run
         msg->setRequestMessageID(request->getTreeId());
-        msg->setTTL(request->getTTL());
         delete request;
         sendMessage(msg);
     }

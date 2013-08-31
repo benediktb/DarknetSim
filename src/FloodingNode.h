@@ -23,7 +23,10 @@ public:
     FloodingNode() : DarknetSimpleNode::DarknetSimpleNode() {};
     virtual ~FloodingNode() {};
 protected:
-    std::list<long> seenMessages;
+    std::set<long> seenMessages;
+    simsignal_t sigDropAlreadySeen;
+
+    virtual void initialize(int stage);
     virtual bool sendMessage(DarknetMessage* msg);
     virtual void handleDarknetMessage(DarknetMessage* msg);
     virtual std::vector<DarknetPeer*> findNextHop(DarknetMessage* msg);

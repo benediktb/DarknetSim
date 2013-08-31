@@ -18,7 +18,12 @@
 
 Define_Module(FloodingNode);
 
-
+void FloodingNode::initialize(int stage) {
+    if(stage == 0) {
+        sigDropAlreadySeen = par("sigDropAlreadySeen");
+    }
+    DarknetSimpleNode::initialize(stage);
+}
 
 std::vector<DarknetPeer*> FloodingNode::findNextHop(DarknetMessage* msg) {
     //TODO: could be improved
@@ -34,12 +39,11 @@ std::vector<DarknetPeer*> FloodingNode::findNextHop(DarknetMessage* msg) {
  * check whether we we have seen msg earlier respectively a duplicate of it
  */
 void FloodingNode::handleDarknetMessage(DarknetMessage* msg) {
-    long test = msg->getTreeId();
-    if(std::find(seenMessages.begin(),seenMessages.end(),test) == seenMessages.end()) { //already seen?
-        seenMessages.push_back(msg->getTreeId());
+    if(seenMessages.count(msg->getTreeId())) { //already seen?
+        seenMessages.insert(msg->getTreeId());
         DarknetSimpleNode::handleDarknetMessage(msg);
     }else {
-        // TODO: tell about dropped message
+        emit(sigDropAlreadySeen,msg->getTreeId());
         delete msg;
     }
 }
@@ -49,7 +53,7 @@ void FloodingNode::handleDarknetMessage(DarknetMessage* msg) {
  */
 bool FloodingNode::sendMessage(DarknetMessage* msg) {
     if(std::find(seenMessages.begin(),seenMessages.end(),msg->getTreeId()) != seenMessages.end()) { //already seen?
-        seenMessages.push_back(msg->getTreeId()); // prevent dealing with messages we self sent
+        seenMessages.insert(msg->getTreeId()); // prevent dealing with messages we self sent
     }
     return DarknetSimpleNode::sendMessage(msg);
 }

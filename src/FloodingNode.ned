@@ -18,5 +18,6 @@ package darknetsim;
 simple FloodingNode extends DarknetSimpleNode {
     parameters:
         @class(FloodingNode);
+        @statistic[sigDropAlreadySeen](record=count,vector?);
     
 }

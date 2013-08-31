@@ -35,7 +35,7 @@ void DarknetBaseNode::initialize(int stage) {
         nodeID = par("nodeID").stdstringValue();
         localPort = par("localPort");
         bindToPort(localPort);
-        defaultTTL = par("sigSendDM");
+        defaultTTL = par("defaultTTL");
         sigSendDM = registerSignal("sigSendDM");
         sigUnhandledMSG = registerSignal("sigUnhandledMSG");
         sigDropTtlExeeded = registerSignal("sigDropTtlExeeded");

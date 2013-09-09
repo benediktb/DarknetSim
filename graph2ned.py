@@ -165,6 +165,6 @@ if(targetCount==0):
 	ininetfile.close()
 else:
 	inifile = open(netname+"-"+str(targetCount)+".ini","w")
-	inifile.write(tpl_inifile % (netname+".ini","\n".join(ini_conf_hosts(nodes))))
+	inifile.write(tpl_inifile % ("\n".join(ini_conf_hosts(nodes)),netname+".ini"))
 	inifile.close()
 

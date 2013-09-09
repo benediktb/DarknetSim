@@ -19,7 +19,7 @@ if len(sys.argv) > 1:
     if len(sys.argv) > 2:
         targetCount = int(sys.argv[2])
     else:
-        targetCount = 1
+        targetCount = 0
 else:
     netname = 'defaultNet'
 
@@ -55,7 +55,7 @@ network %s
 %s
 }"""
 
-tpl_inifile="""[General]
+tpl_ininetfile="""[General]
 network = %s
 **udpApp[0].localPort = %s
 
@@ -66,14 +66,60 @@ output-scalar-file = ${resultdir}/${network}-%s-${configname}-${runnumber}.sca
 
 
 include general.ini
+"""
 
-[Config Flooding]
-extends = General
-**.udpAppType = "FloodingNode"
+tpl_inifile="""[General]
+
+%s
+
+include %s
 
 [Config Randomwalk]
 extends = General
 **.udpAppType = "RandomwalkNode"
+
+[Config Random2]
+extends = Randomwalk
+**.requestFanout = 2
+
+[Config Random4]
+extends = Randomwalk
+**.requestFanout = 4
+
+[Config Random8]
+extends = Randomwalk
+**.requestFanout = 8
+
+
+[Config Flooding]
+extends = General
+sim-time-limit = 3600s
+
+**.udpAppType = "FloodingNode"
+**.defaultTTL = 1
+**.udpApp[0].requestIntervalMean = 600s
+**.udpApp[0].requestIntervalVariance = 60
+
+[Config Flood2]
+extends = Flooding
+**defaultTTL = 2
+
+[Config Flood3]
+extends = Flooding
+**defaultTTL = 3
+
+[Config Flood4]
+extends = Flooding
+**defaultTTL = 4
+
+[Config Flood5]
+extends = Flooding
+**defaultTTL = 5
+
+[Config Flood6]
+extends = Flooding
+**defaultTTL = 6
+
 """
 
 def ned_make_hosts(nodes):
@@ -88,7 +134,7 @@ def ned_make_router_connections(nodes):
         ret.append("\trouter.pppg++ <--> DatarateChannel <--> host"+node+".pppg++;")
     return ret
 
-def ini_conf_hosts(nodes):
+def ini_conf_net(nodes):
     ret = []
     for node in nodes.keys():
         ret.append("**.host"+node+".udpApp[0].nodeID = \"host"+node+"\"")
@@ -96,6 +142,11 @@ def ini_conf_hosts(nodes):
         for peer in nodes[node]:
             peers.append("host"+peer+":"+str(default_port))
         ret.append("**.host"+node+".udpApp[0].destinations = \""+(" ".join(peers))+"\"")
+    return ret
+
+def ini_conf_hosts(nodes):
+    ret = []
+    for node in nodes.keys():
         targets=[]
         for x in range(0,targetCount):
             targets.append("host"+random.choice(nodes.keys()))
@@ -103,10 +154,17 @@ def ini_conf_hosts(nodes):
     return ret
 
 
-nedfile = open(netname+".ned","w")
-nedfile.write(tpl_nedfile % (netname,"\n".join(ned_make_hosts(nodes)),"\n".join(ned_make_router_connections(nodes))))
-nedfile.close()
-inifile = open(netname+"-"+str(targetCount)+".ini","w")
-inifile.write(tpl_inifile % (netname,default_port,targetCount,targetCount,"\n".join(ini_conf_hosts(nodes))))
-inifile.close()
+
+
+if(targetCount==0):
+	nedfile = open(netname+".ned","w")
+	nedfile.write(tpl_nedfile % (netname,"\n".join(ned_make_hosts(nodes)),"\n".join(ned_make_router_connections(nodes))))
+	nedfile.close()
+	ininetfile = open(netname+".ini","w")
+	ininetfile.write(tpl_ininetfile % (netname,default_port,targetCount,targetCount,"\n".join(ini_conf_net(nodes))))
+	ininetfile.close()
+else:
+	inifile = open(netname+"-"+str(targetCount)+".ini","w")
+	inifile.write(tpl_inifile % (netname+".ini","\n".join(ini_conf_hosts(nodes))))
+	inifile.close()
 

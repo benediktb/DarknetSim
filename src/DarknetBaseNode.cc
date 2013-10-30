@@ -20,7 +20,6 @@
 #include <cstringtokenizer.h>
 #include <algorithm>
 
-
 void DarknetBaseNode::addPeer(std::string nodeID, IPvXAddress& destAddr, int destPort) {
     DarknetPeer* peer = new DarknetPeer;
     peer->nodeID = nodeID;

@@ -15,7 +15,7 @@
 
 package darknetsim;
 
-simple DarknetBaseNode like inet.applications.udpapp.UDPApp {
+simple DarknetBaseNode like inet.applications.IUDPApp {
     parameters:
         @statistic[sigSendDM](record=count,vector?);
         @statistic[sigUnhandledMSG](record=count,vector?);

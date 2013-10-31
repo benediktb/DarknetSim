@@ -3,7 +3,7 @@
 	<name>DarknetSim</name>
 	<comment></comment>
 	<projects>
-		<project>inet</project>
+		<project>inet-2.2.0</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

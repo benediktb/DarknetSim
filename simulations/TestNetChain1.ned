@@ -18,7 +18,7 @@ package darknetsim_patrick.simulations;
 
 import inet.nodes.inet.StandardHost;
 import inet.nodes.inet.Router;
-import inet.networklayer.autorouting.ipv4.FlatNetworkConfigurator;
+import inet.networklayer.autorouting.ipv4.IPv4NetworkConfigurator;
 import ned.DatarateChannel;
 
 
@@ -26,10 +26,8 @@ network TestNetChain1
 {
     @display("bgb=424,130");
     submodules:
-        configurator: FlatNetworkConfigurator {
+        configurator: IPv4NetworkConfigurator {
             @display("p=54,90;i=block/cogwheel");
-            networkAddress = "23.42.1.0";
-            netmask = "255.255.255.0";
         }
         router: Router {
             @display("p=170,90");

@@ -17,7 +17,9 @@
 #define DARKNETBASENODE_H_
 
 #include <omnetpp.h>
-#include <UDPAppBase.h>
+#include <AppBase.h>
+#include <IPvXAddress.h>
+#include <UDPSocket.h>
 #include "darknetmessage_m.h"
 
 typedef struct {
@@ -33,7 +35,7 @@ typedef struct {
     std::string destId;
 } seenPacket;
 
-class DarknetBaseNode : public UDPAppBase  {
+class DarknetBaseNode : public AppBase  {
 public:
     DarknetBaseNode() {};
     virtual ~DarknetBaseNode() { };
@@ -41,6 +43,7 @@ public:
 protected:
 
     std::string nodeID;
+    UDPSocket socket;
     int localPort;
     int defaultTTL;
     std::map<std::string, DarknetPeer*> peers;
@@ -60,12 +63,17 @@ protected:
     virtual void sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr, int destPort);
     virtual bool sendDirectMessage(DarknetMessage* msg);
     virtual bool sendMessage(DarknetMessage* msg);
-    virtual void handleMessage(cMessage* msg);
+    virtual void handleUDPMessage(cMessage* msg);
     virtual DarknetMessage* makeRequest(std::string nodeID);
+    virtual void sendToUDP(cPacket *msg, int srcPort, const IPvXAddress& destAddr, int destPort);
+    virtual void handleMessageWhenUp(cMessage *msg);
 
 
     //things you probably want to implement or extend
     virtual void initialize(int stage);
+    bool startApp(IDoneCallback *doneCallback) {return true;}
+    bool stopApp(IDoneCallback *doneCallback) {return true;}
+    bool crashApp(IDoneCallback *doneCallback) {return true;}
     virtual void handleDarknetMessage(DarknetMessage* msg);
     virtual void handleIncomingMessage(DarknetMessage* msg);
     virtual void forwardMessage(DarknetMessage* msg);

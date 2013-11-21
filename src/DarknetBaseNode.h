@@ -79,6 +79,9 @@ protected:
     virtual void forwardMessage(DarknetMessage* msg);
     virtual void forwardResponse(DarknetMessage* msg);
     virtual void handleRequest(DarknetMessage* msg);
+    virtual bool canMessageBeForwarded(DarknetMessage* msg);
+    virtual void doForwardingChangesOnMessage(DarknetMessage* msg);
+
 
 
     //things you have to implement

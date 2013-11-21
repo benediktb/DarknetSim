@@ -71,9 +71,9 @@ protected:
 
     //things you probably want to implement or extend
     virtual void initialize(int stage);
-    bool startApp(IDoneCallback *doneCallback) {return true;}
-    bool stopApp(IDoneCallback *doneCallback) {return true;}
-    bool crashApp(IDoneCallback *doneCallback) {return true;}
+    virtual bool startApp(IDoneCallback *doneCallback) {return true;}
+    virtual bool stopApp(IDoneCallback *doneCallback) {return true;}
+    virtual bool crashApp(IDoneCallback *doneCallback) {return true;}
     virtual void handleDarknetMessage(DarknetMessage* msg);
     virtual void handleIncomingMessage(DarknetMessage* msg);
     virtual void forwardMessage(DarknetMessage* msg);

@@ -212,13 +212,17 @@ void DarknetBaseNode::handleRequest(DarknetMessage* request) {
     sendMessage(msg);
 }
 
-DarknetMessage* DarknetBaseNode::makeRequest(std::string nodeID) {
-    DarknetMessage *msg = new DarknetMessage();
+DarknetMessage* DarknetBaseNode::makeRequest(DarknetMessage *msg, std::string nodeID) {
     msg->setDestNodeID(nodeID.c_str());
     msg->setType(DM_REQUEST);
     msg->setTTL(defaultTTL);
     outstandingResponses.insert(msg->getTreeId());
     return msg;
+}
+
+DarknetMessage* DarknetBaseNode::makeRequest(std::string nodeID) {
+    DarknetMessage *msg = new DarknetMessage();
+    return makeRequest(msg, nodeID);
 }
 
 void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {

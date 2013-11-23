@@ -65,6 +65,7 @@ protected:
     virtual bool sendMessage(DarknetMessage* msg);
     virtual void handleUDPMessage(cMessage* msg);
     virtual DarknetMessage* makeRequest(std::string nodeID);
+    virtual DarknetMessage* makeRequest(DarknetMessage *msg, std::string nodeID);
     virtual void sendToUDP(cPacket *msg, int srcPort, const IPvXAddress& destAddr, int destPort);
     virtual void handleMessageWhenUp(cMessage *msg);
 

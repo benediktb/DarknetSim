@@ -24,7 +24,7 @@ simple DarknetBaseNode like inet.applications.IUDPApp {
         @statistic[sigResponseRemainingTTL](record=stats,vector?);
         int localPort;
         string nodeID;
-        string destinations;
+        string friends;
         int defaultTTL = default(32);
     gates:
 	    input udpIn;

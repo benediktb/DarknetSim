@@ -50,20 +50,21 @@ void DarknetBaseNode::initialize(int stage) {
         break;
     case 3: {
         std::vector<std::string> v =
-                cStringTokenizer(par("destinations")).asVector();
+                cStringTokenizer(par("friends")).asVector();
         for (std::vector<std::string>::iterator iter = v.begin();
                 iter != v.end(); iter++) {
             std::vector<std::string> peer_tuple = cStringTokenizer(
                     (*iter).c_str(), ":").asVector(); //split <destID>:<destPort>
-            if (peer_tuple.size() == 2) {
-                std::string nodeID = peer_tuple[0];
-                std::istringstream convert(peer_tuple[1]);
+            if (peer_tuple.size() == 3) {
+                std::string moduleName = peer_tuple[0];
+                std::string nodeID = peer_tuple[1];
+                std::istringstream convert(peer_tuple[2]);
                 int port;
                 port = convert >> port ? port : 0; //convert string to int (user 0 on error)
-                IPvXAddress ip = IPvXAddressResolver().resolve(nodeID.c_str());
+                IPvXAddress ip = IPvXAddressResolver().resolve(moduleName.c_str());
                 addPeer(nodeID, ip, port);
             } else {
-                EV<< "Error on parsing peer list; this peer seems malformed: " << (*iter);
+                EV<< "Error on parsing peer list; this peer seems malformed: " << (*iter) << endl;
             }
         }}
     break;

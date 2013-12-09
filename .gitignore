@@ -5,7 +5,9 @@ src/results
 
 #files
 Makefile*
-src/DarknetSim
+libDarknetSim*
+src/DarknetSim*
+src/libDarknetSim*
 simulations/run
 
 #dotfiles

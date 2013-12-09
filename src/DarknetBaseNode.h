@@ -22,10 +22,11 @@
 #include <UDPSocket.h>
 #include "darknetmessage_m.h"
 
+typedef std::pair<IPvXAddress, int> UDPAddress;
+
 typedef struct {
     std::string nodeID;
-    IPvXAddress address;
-    int port;
+    UDPAddress address;
 } DarknetPeer;
 
 typedef struct {
@@ -47,6 +48,7 @@ protected:
     int localPort;
     int defaultTTL;
     std::map<std::string, DarknetPeer*> peers;
+    std::map<UDPAddress, DarknetPeer*> peersByAddress;
     std::set<std::string> connected;
     std::map<long, std::string > forwardedIdTable; // map for forwarded MessageIDs -> source nodeID
     std::set<long> outstandingResponses; // list for responses we are waiting for
@@ -66,7 +68,7 @@ protected:
     virtual void handleUDPMessage(cMessage* msg);
     virtual DarknetMessage* makeRequest(std::string nodeID);
     virtual DarknetMessage* makeRequest(DarknetMessage *msg, std::string nodeID);
-    virtual void sendToUDP(cPacket *msg, int srcPort, const IPvXAddress& destAddr, int destPort);
+    virtual void sendToUDP(DarknetMessage *msg, int srcPort, const IPvXAddress& destAddr, int destPort);
     virtual void handleMessageWhenUp(cMessage *msg);
 
 
@@ -75,11 +77,11 @@ protected:
     virtual bool startApp(IDoneCallback *doneCallback) {return true;}
     virtual bool stopApp(IDoneCallback *doneCallback) {return true;}
     virtual bool crashApp(IDoneCallback *doneCallback) {return true;}
-    virtual void handleDarknetMessage(DarknetMessage* msg);
-    virtual void handleIncomingMessage(DarknetMessage* msg);
-    virtual void forwardMessage(DarknetMessage* msg);
+    virtual void handleDarknetMessage(DarknetMessage* msg, DarknetPeer *sender);
+    virtual void handleIncomingMessage(DarknetMessage* msg, DarknetPeer *sender);
+    virtual void forwardMessage(DarknetMessage* msg, DarknetPeer *sender);
     virtual void forwardResponse(DarknetMessage* msg);
-    virtual void handleRequest(DarknetMessage* msg);
+    virtual void handleRequest(DarknetMessage* msg, DarknetPeer *sender);
     virtual bool canMessageBeForwarded(DarknetMessage* msg);
     virtual void doForwardingChangesOnMessage(DarknetMessage* msg);
 

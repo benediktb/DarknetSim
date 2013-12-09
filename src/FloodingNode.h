@@ -28,7 +28,7 @@ protected:
 
     virtual void initialize(int stage);
     virtual bool sendMessage(DarknetMessage* msg);
-    virtual void handleDarknetMessage(DarknetMessage* msg);
+    virtual void handleDarknetMessage(DarknetMessage* msg, DarknetPeer *sender);
     virtual std::vector<DarknetPeer*> findNextHop(DarknetMessage* msg);
 };
 

@@ -41,7 +41,7 @@ void DarknetOfflineDetectionNode::connectPeer(std::string nodeID) {
     sendDirectMessage(dm);
 }
 
-void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg) {
+void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg, DarknetPeer *sender) {
     switch(msg->getType()) {
     case DM_CON_SYN: {
         if(peers.find(msg->getSrcNodeID()) != peers.end()) {
@@ -65,7 +65,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg) {
         break;
     }
     default:
-        DarknetBaseNode::handleIncomingMessage(msg);
+        DarknetBaseNode::handleIncomingMessage(msg, sender);
        break;
     }
 }
@@ -75,7 +75,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg) {
  * check if message is of type DM_RCVACK, if so stop resendTimer for according message.
  * if not, send DM_RCVACK to sender and pass it to handleIncomingMessage
  */
-void DarknetOfflineDetectionNode::handleDarknetMessage(DarknetMessage* msg) {
+void DarknetOfflineDetectionNode::handleDarknetMessage(DarknetMessage* msg, DarknetPeer *sender) {
     if( msg->getType() == DM_RCVACK) {
         long orig_mID = msg->getRequestMessageID();
         if(rcvack_waiting.count(orig_mID) == 1) {
@@ -92,7 +92,7 @@ void DarknetOfflineDetectionNode::handleDarknetMessage(DarknetMessage* msg) {
         ack->setTTL(defaultTTL);
         ack->setRequestMessageID(msg->getId());
         sendDirectMessage(ack);
-        DarknetSimpleNode::handleDarknetMessage(msg);
+        DarknetSimpleNode::handleDarknetMessage(msg, sender);
     }
 }
 

@@ -31,9 +31,9 @@ protected:
     simsignal_t sigDropResendExeeded;
 
     virtual void initialize(int stage);
-    virtual void handleDarknetMessage(DarknetMessage* msg);
+    virtual void handleDarknetMessage(DarknetMessage* msg, DarknetPeer *sender);
     virtual void connectPeer(std::string nodeID);
-    virtual void handleIncomingMessage(DarknetMessage* msg);
+    virtual void handleIncomingMessage(DarknetMessage* msg, DarknetPeer *sender);
     virtual void handleSelfMessage(cMessage* msg);
     virtual void sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr, int destPort);
 

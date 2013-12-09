@@ -30,39 +30,24 @@ void doUnpacking(cCommBuffer *, T& t) {
 
 
 
-EXECUTE_ON_STARTUP(
-    cEnum *e = cEnum::find("DarknetMessageType");
-    if (!e) enums.getInstance()->add(e = new cEnum("DarknetMessageType"));
-    e->insert(DM_UNKNOWN, "DM_UNKNOWN");
-    e->insert(DM_REQUEST, "DM_REQUEST");
-    e->insert(DM_RESPONSE, "DM_RESPONSE");
-    e->insert(DM_CON_SYN, "DM_CON_SYN");
-    e->insert(DM_CON_ACK, "DM_CON_ACK");
-    e->insert(DM_RCVACK, "DM_RCVACK");
-    e->insert(DM_FORWARD, "DM_FORWARD");
-);
-
-Register_Class(DarknetMessage);
-
-DarknetMessage::DarknetMessage(const char *name, int kind) : cPacket(name,kind)
+DarknetMessage_Base::DarknetMessage_Base(const char *name, int kind) : cPacket(name,kind)
 {
     this->destNodeID_var = 0;
     this->srcNodeID_var = 0;
     this->TTL_var = 32;
-    this->type_var = 0;
     this->requestMessageID_var = 0;
 }
 
-DarknetMessage::DarknetMessage(const DarknetMessage& other) : cPacket(other)
+DarknetMessage_Base::DarknetMessage_Base(const DarknetMessage_Base& other) : cPacket(other)
 {
     copy(other);
 }
 
-DarknetMessage::~DarknetMessage()
+DarknetMessage_Base::~DarknetMessage_Base()
 {
 }
 
-DarknetMessage& DarknetMessage::operator=(const DarknetMessage& other)
+DarknetMessage_Base& DarknetMessage_Base::operator=(const DarknetMessage_Base& other)
 {
     if (this==&other) return *this;
     cPacket::operator=(other);
@@ -70,7 +55,7 @@ DarknetMessage& DarknetMessage::operator=(const DarknetMessage& other)
     return *this;
 }
 
-void DarknetMessage::copy(const DarknetMessage& other)
+void DarknetMessage_Base::copy(const DarknetMessage_Base& other)
 {
     this->destNodeID_var = other.destNodeID_var;
     this->srcNodeID_var = other.srcNodeID_var;
@@ -79,7 +64,7 @@ void DarknetMessage::copy(const DarknetMessage& other)
     this->requestMessageID_var = other.requestMessageID_var;
 }
 
-void DarknetMessage::parsimPack(cCommBuffer *b)
+void DarknetMessage_Base::parsimPack(cCommBuffer *b)
 {
     cPacket::parsimPack(b);
     doPacking(b,this->destNodeID_var);
@@ -89,7 +74,7 @@ void DarknetMessage::parsimPack(cCommBuffer *b)
     doPacking(b,this->requestMessageID_var);
 }
 
-void DarknetMessage::parsimUnpack(cCommBuffer *b)
+void DarknetMessage_Base::parsimUnpack(cCommBuffer *b)
 {
     cPacket::parsimUnpack(b);
     doUnpacking(b,this->destNodeID_var);
@@ -99,52 +84,52 @@ void DarknetMessage::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->requestMessageID_var);
 }
 
-const char * DarknetMessage::getDestNodeID() const
+const char * DarknetMessage_Base::getDestNodeID() const
 {
     return destNodeID_var.c_str();
 }
 
-void DarknetMessage::setDestNodeID(const char * destNodeID)
+void DarknetMessage_Base::setDestNodeID(const char * destNodeID)
 {
     this->destNodeID_var = destNodeID;
 }
 
-const char * DarknetMessage::getSrcNodeID() const
+const char * DarknetMessage_Base::getSrcNodeID() const
 {
     return srcNodeID_var.c_str();
 }
 
-void DarknetMessage::setSrcNodeID(const char * srcNodeID)
+void DarknetMessage_Base::setSrcNodeID(const char * srcNodeID)
 {
     this->srcNodeID_var = srcNodeID;
 }
 
-int DarknetMessage::getTTL() const
+int DarknetMessage_Base::getTTL() const
 {
     return TTL_var;
 }
 
-void DarknetMessage::setTTL(int TTL)
+void DarknetMessage_Base::setTTL(int TTL)
 {
     this->TTL_var = TTL;
 }
 
-int DarknetMessage::getType() const
+DarknetMessageType& DarknetMessage_Base::getType()
 {
     return type_var;
 }
 
-void DarknetMessage::setType(int type)
+void DarknetMessage_Base::setType(const DarknetMessageType& type)
 {
     this->type_var = type;
 }
 
-long DarknetMessage::getRequestMessageID() const
+long DarknetMessage_Base::getRequestMessageID() const
 {
     return requestMessageID_var;
 }
 
-void DarknetMessage::setRequestMessageID(long requestMessageID)
+void DarknetMessage_Base::setRequestMessageID(long requestMessageID)
 {
     this->requestMessageID_var = requestMessageID;
 }
@@ -184,11 +169,12 @@ DarknetMessageDescriptor::~DarknetMessageDescriptor()
 
 bool DarknetMessageDescriptor::doesSupport(cObject *obj) const
 {
-    return dynamic_cast<DarknetMessage *>(obj)!=NULL;
+    return dynamic_cast<DarknetMessage_Base *>(obj)!=NULL;
 }
 
 const char *DarknetMessageDescriptor::getProperty(const char *propertyname) const
 {
+    if (!strcmp(propertyname,"customize")) return "true";
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? basedesc->getProperty(propertyname) : NULL;
 }
@@ -211,7 +197,7 @@ unsigned int DarknetMessageDescriptor::getFieldTypeFlags(void *object, int field
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
-        FD_ISEDITABLE,
+        FD_ISCOMPOUND,
         FD_ISEDITABLE,
     };
     return (field>=0 && field<5) ? fieldTypeFlags[field] : 0;
@@ -259,7 +245,7 @@ const char *DarknetMessageDescriptor::getFieldTypeString(void *object, int field
         "string",
         "string",
         "int",
-        "int",
+        "DarknetMessageType",
         "long",
     };
     return (field>=0 && field<5) ? fieldTypeStrings[field] : NULL;
@@ -274,9 +260,6 @@ const char *DarknetMessageDescriptor::getFieldProperty(void *object, int field, 
         field -= basedesc->getFieldCount(object);
     }
     switch (field) {
-        case 3:
-            if (!strcmp(propertyname,"enum")) return "DarknetMessageType";
-            return NULL;
         default: return NULL;
     }
 }
@@ -289,7 +272,7 @@ int DarknetMessageDescriptor::getArraySize(void *object, int field) const
             return basedesc->getArraySize(object, field);
         field -= basedesc->getFieldCount(object);
     }
-    DarknetMessage *pp = (DarknetMessage *)object; (void)pp;
+    DarknetMessage_Base *pp = (DarknetMessage_Base *)object; (void)pp;
     switch (field) {
         default: return 0;
     }
@@ -303,12 +286,12 @@ std::string DarknetMessageDescriptor::getFieldAsString(void *object, int field, 
             return basedesc->getFieldAsString(object,field,i);
         field -= basedesc->getFieldCount(object);
     }
-    DarknetMessage *pp = (DarknetMessage *)object; (void)pp;
+    DarknetMessage_Base *pp = (DarknetMessage_Base *)object; (void)pp;
     switch (field) {
         case 0: return oppstring2string(pp->getDestNodeID());
         case 1: return oppstring2string(pp->getSrcNodeID());
         case 2: return long2string(pp->getTTL());
-        case 3: return long2string(pp->getType());
+        case 3: {std::stringstream out; out << pp->getType(); return out.str();}
         case 4: return long2string(pp->getRequestMessageID());
         default: return "";
     }
@@ -322,12 +305,11 @@ bool DarknetMessageDescriptor::setFieldAsString(void *object, int field, int i, 
             return basedesc->setFieldAsString(object,field,i,value);
         field -= basedesc->getFieldCount(object);
     }
-    DarknetMessage *pp = (DarknetMessage *)object; (void)pp;
+    DarknetMessage_Base *pp = (DarknetMessage_Base *)object; (void)pp;
     switch (field) {
         case 0: pp->setDestNodeID((value)); return true;
         case 1: pp->setSrcNodeID((value)); return true;
         case 2: pp->setTTL(string2long(value)); return true;
-        case 3: pp->setType(string2long(value)); return true;
         case 4: pp->setRequestMessageID(string2long(value)); return true;
         default: return false;
     }
@@ -345,7 +327,7 @@ const char *DarknetMessageDescriptor::getFieldStructName(void *object, int field
         NULL,
         NULL,
         NULL,
-        NULL,
+        "DarknetMessageType",
         NULL,
     };
     return (field>=0 && field<5) ? fieldStructNames[field] : NULL;
@@ -359,8 +341,9 @@ void *DarknetMessageDescriptor::getFieldStructPointer(void *object, int field, i
             return basedesc->getFieldStructPointer(object, field, i);
         field -= basedesc->getFieldCount(object);
     }
-    DarknetMessage *pp = (DarknetMessage *)object; (void)pp;
+    DarknetMessage_Base *pp = (DarknetMessage_Base *)object; (void)pp;
     switch (field) {
+        case 3: return (void *)(&pp->getType()); break;
         default: return NULL;
     }
 }

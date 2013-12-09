@@ -20,7 +20,7 @@
 #include <AppBase.h>
 #include <IPvXAddress.h>
 #include <UDPSocket.h>
-#include "darknetmessage_m.h"
+#include "darknetmessage.h"
 
 typedef std::pair<IPvXAddress, int> UDPAddress;
 

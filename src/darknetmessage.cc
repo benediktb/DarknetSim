@@ -5,12 +5,10 @@
 #include "darknetmessage.h"
 #include <sstream>
 
+Register_Class(DarknetMessage);
+
 void DarknetMessage::copy(const DarknetMessage& other) {
-    this->destNodeID_var = other.destNodeID_var;
-    this->srcNodeID_var = other.srcNodeID_var;
-    this->TTL_var = other.TTL_var;
-    this->type_var = other.type_var;
-    this->requestMessageID_var = other.requestMessageID_var;
+    // Nothing to add here
 }
 
 

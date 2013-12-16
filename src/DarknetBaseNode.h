@@ -70,6 +70,7 @@ protected:
     virtual bool sendDirectMessage(DarknetMessage* msg);
     virtual bool sendMessage(DarknetMessage* msg);
     virtual void handleUDPMessage(cMessage* msg);
+    virtual void makeResponse(DarknetMessage *msg, DarknetMessage *request);
     virtual DarknetMessage* makeRequest(std::string nodeID);
     virtual DarknetMessage* makeRequest(DarknetMessage *msg, std::string nodeID);
     virtual void sendToUDP(DarknetMessage *msg, int srcPort, const IPvXAddress& destAddr, int destPort);

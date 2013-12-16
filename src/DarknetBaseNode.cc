@@ -225,12 +225,16 @@ void DarknetBaseNode::forwardResponse(DarknetMessage* msg) {
     sendMessage(msg);
 }
 
-void DarknetBaseNode::handleRequest(DarknetMessage* request, DarknetPeer *sender) {
-    DarknetMessage *msg = new DarknetMessage();
-    msg->setDestNodeID(request->getSrcNodeID());
+void DarknetBaseNode::makeResponse(DarknetMessage *msg, DarknetMessage *request) {
     msg->setType(DM_RESPONSE);
     msg->setTTL(defaultTTL);
     msg->setRequestMessageID(request->getTreeId());
+    msg->setDestNodeID(request->getSrcNodeID());
+}
+
+void DarknetBaseNode::handleRequest(DarknetMessage* request, DarknetPeer *sender) {
+    DarknetMessage *msg = new DarknetMessage();
+    makeResponse(msg, request);
     delete request;
     sendMessage(msg);
 }

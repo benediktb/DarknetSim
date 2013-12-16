@@ -24,10 +24,14 @@
 
 typedef std::pair<IPvXAddress, int> UDPAddress;
 
-typedef struct {
+typedef struct DarknetPeer DarknetPeer;
+struct DarknetPeer{
     std::string nodeID;
     UDPAddress address;
-} DarknetPeer;
+    bool operator<(const DarknetPeer& other) const {
+        return address < other.address;
+    };
+};
 
 typedef struct {
     long packetId;

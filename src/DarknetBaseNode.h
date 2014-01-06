@@ -31,6 +31,9 @@ struct DarknetPeer{
     bool operator<(const DarknetPeer& other) const {
         return address < other.address;
     };
+    bool operator==(const DarknetPeer& other) const {
+        return nodeID == other.nodeID;
+    };
 };
 
 typedef struct {

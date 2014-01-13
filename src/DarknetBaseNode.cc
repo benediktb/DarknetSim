@@ -148,7 +148,7 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
             return;
         }
         DarknetPeer* sender = it->second;
-        EV << "Received DarknetMessage from peer " << sender->nodeID << endl;
+        EV << "Received DarknetMessage from " << sender->address.first << ", peer " << sender->nodeID << endl;
         handleDarknetMessage(dm, sender);
     } else {
         EV<< "received an unknown cMessage: " << msg << endl;

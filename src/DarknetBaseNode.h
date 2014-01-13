@@ -90,8 +90,6 @@ protected:
     virtual void forwardMessage(DarknetMessage* msg, DarknetPeer *sender);
     virtual void forwardResponse(DarknetMessage* msg);
     virtual void handleRequest(DarknetMessage* msg, DarknetPeer *sender);
-    virtual bool canMessageBeForwarded(DarknetMessage* msg);
-    virtual void doForwardingChangesOnMessage(DarknetMessage* msg);
 
 
 

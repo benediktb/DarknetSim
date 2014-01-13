@@ -189,21 +189,14 @@ void DarknetBaseNode::handleIncomingMessage(DarknetMessage *msg, DarknetPeer *se
     }
 }
 
-bool DarknetBaseNode::canMessageBeForwarded(DarknetMessage* msg) {
-    return msg->getTTL() > 0;
-}
-
-void DarknetBaseNode::doForwardingChangesOnMessage(DarknetMessage* msg) {
-    msg->setTTL(msg->getTTL() - 1); //TODO: add probability of TTL reduction
-}
-
 /*
  * if TTL is > 0; insert the messages treeID in forwardedIdTable and forward it (after decrement TTL)
  * drop it if TTL is = 0
  */
 void DarknetBaseNode::forwardMessage(DarknetMessage* msg, DarknetPeer *sender) {
-    if (canMessageBeForwarded(msg)) {
-        doForwardingChangesOnMessage(msg);
+    int ttl = msg->getTTL();
+    if (ttl > 0) {
+        msg->setTTL(ttl - 1); //TODO: add probability of TTL reduction
         forwardedIdTable.insert(
                 std::pair<long, std::string>(msg->getTreeId(),
                         msg->getSrcNodeID()));

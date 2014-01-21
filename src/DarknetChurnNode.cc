@@ -40,6 +40,10 @@ void DarknetChurnNode::initialize(int stage) {
     case 0: {
         churnController = dynamic_cast<ChurnController *>(simulation.getModuleByPath("churnController"));
 
+        if (churnController == NULL) {
+            error("Could not find ChurnController. Is there one in the network (with name 'churnController')?");
+        }
+
         /* Check whether to start at all */
         goOnline = par("startState").boolValue();
 

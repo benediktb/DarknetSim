@@ -20,7 +20,7 @@
 
 class DarknetOfflineDetectionNode: public DarknetSimpleNode {
 public:
-    DarknetOfflineDetectionNode() : DarknetSimpleNode::DarknetSimpleNode() {};
+    DarknetOfflineDetectionNode() : DarknetSimpleNode::DarknetSimpleNode(), resendTimerMean(0), resendTimerVariance(0), resendCounter(0) {};
     virtual ~DarknetOfflineDetectionNode() {};
 
 protected:

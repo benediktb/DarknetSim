@@ -55,8 +55,6 @@ void DarknetBaseNode::addPeer(std::string nodeID, IPvXAddress& destAddr,
 }
 
 void DarknetBaseNode::initialize(int stage) {
-    AppBase::initialize(stage);
-
     switch (stage) {
     case 0:
         localPort = par("localPort");
@@ -98,6 +96,8 @@ void DarknetBaseNode::initialize(int stage) {
          * It all takes place now in startApp().
          */
     }
+
+    AppBase::initialize(stage);
 }
 
 void DarknetBaseNode::connectAllFriends() {

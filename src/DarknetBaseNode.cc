@@ -21,14 +21,37 @@
 #include <cstringtokenizer.h>
 #include <algorithm>
 
+std::string DarknetBaseNode::getNodeID() {
+    return nodeID;
+}
+
+bool DarknetBaseNode::startApp(IDoneCallback *doneCallback) {
+    // Default startup: Bind socket & connect to friends
+    connectAllFriends();
+    return true;
+}
+
+bool DarknetBaseNode::stopApp(IDoneCallback *doneCallback) {
+    // Currently, there's no actual difference between crash and stop.
+    return crashApp(doneCallback);
+}
+
+bool DarknetBaseNode::crashApp(IDoneCallback *doneCallback) {
+    connected.clear();
+    forwardedIdTable.clear();
+    outstandingResponses.clear();
+    return true;
+}
+
+
 void DarknetBaseNode::addPeer(std::string nodeID, IPvXAddress& destAddr,
         int destPort) {
     DarknetPeer* peer = new DarknetPeer;
     UDPAddress* address = new UDPAddress(destAddr, destPort);
     peer->nodeID = nodeID;
     peer->address = *address;
-    peers.insert(std::pair<std::string, DarknetPeer*>(nodeID, peer));
-    peersByAddress.insert(std::pair<UDPAddress, DarknetPeer*>(*address, peer));
+    friendsByID.insert(std::pair<std::string, DarknetPeer*>(nodeID, peer));
+    friendsByAddress.insert(std::pair<IPvXAddress, DarknetPeer*>(destAddr, peer));
 }
 
 void DarknetBaseNode::initialize(int stage) {
@@ -38,7 +61,6 @@ void DarknetBaseNode::initialize(int stage) {
     case 0:
         localPort = par("localPort");
         socket.setOutputGate(gate("udpOut"));
-        socket.bind(localPort);
 
         nodeID = par("nodeID").stdstringValue();
         defaultTTL = par("defaultTTL");
@@ -51,6 +73,7 @@ void DarknetBaseNode::initialize(int stage) {
     case 3: {
         std::vector<std::string> v =
                 cStringTokenizer(par("friends")).asVector();
+
         for (std::vector<std::string>::iterator iter = v.begin();
                 iter != v.end(); iter++) {
             std::vector<std::string> peer_tuple = cStringTokenizer(
@@ -67,20 +90,28 @@ void DarknetBaseNode::initialize(int stage) {
                 EV<< "Error on parsing peer list; this peer seems malformed: " << (*iter) << endl;
             }
         }}
-    break;
-    case 4:
-    for(std::map<std::string, DarknetPeer*>::iterator iter = peers.begin(); iter != peers.end(); iter++) {
+
+        break;
+        /* Here used to be socket binding & connecting to friends. However,
+         * as initialize() is only run at the very beginning (and not when a
+         * node restarts), those things might be needed multiple times later on.
+         * It all takes place now in startApp().
+         */
+    }
+}
+
+void DarknetBaseNode::connectAllFriends() {
+    socket.bind(localPort);
+    for(std::map<std::string, DarknetPeer*>::iterator iter = friendsByID.begin(); iter != friendsByID.end(); iter++) {
         connectPeer(iter->second->nodeID);
     }
-    break;
-}
 }
 
 void DarknetBaseNode::sendToUDP(DarknetMessage *msg, int srcPort,
         const IPvXAddress& destAddr, int destPort) {
     EV << "Sending UDP packet: " << getParentModule()->getFullName() << " --> ";
     EV << msg->toString() << "  (" << msg->getByteLength() << " bytes)";
-    EV << " --> " << IPvXAddressResolver().findHostWithAddress(destAddr)->getFullName();
+    //EV << " --> " << IPvXAddressResolver().findHostWithAddress(destAddr)->getFullName();
     EV << " (" << destAddr << ":" << destPort << ")" << endl;
 
     socket.sendTo(msg, destAddr, destPort);
@@ -97,8 +128,8 @@ void DarknetBaseNode::sendPacket(DarknetMessage* dmsg, IPvXAddress& destAddr,
  * if destination is not in peers list, just drop it
  */
 bool DarknetBaseNode::sendDirectMessage(DarknetMessage* msg) {
-    if (peers.find(msg->getDestNodeID()) != peers.end()) {
-        DarknetPeer *peer = peers[msg->getDestNodeID()];
+    if (friendsByID.find(msg->getDestNodeID()) != friendsByID.end()) {
+        DarknetPeer *peer = friendsByID[msg->getDestNodeID()];
         msg->setSrcNodeID(nodeID.c_str());
         sendPacket(msg, peer->address.first, peer->address.second);
         return true;
@@ -131,19 +162,15 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
     if (dm != NULL) {
         UDPDataIndication* udi = (UDPDataIndication*) dm->getControlInfo();
         UDPAddress* srcAddr = new UDPAddress(udi->getSrcAddr(), udi->getSrcPort());
-        std::map<UDPAddress, DarknetPeer*>::iterator it;
-        it = peersByAddress.find(*srcAddr);
-        if (peersByAddress.end() == it) {
+        typedef std::map<IPvXAddress, DarknetPeer*>::iterator it_type;
+        it_type it = friendsByAddress.find(udi->getSrcAddr());
+        if (friendsByAddress.end() == it) {
             EV << "Could not get sending peer for message: " << msg << endl;
-
             EV << "  + Source address: " << srcAddr->first.str() << ":" << srcAddr->second << endl;
-
             EV << "  + Content of address -> peer map: " << endl;
-            typedef std::map<UDPAddress, DarknetPeer*>::iterator it_type;
-            for(it_type iterator = peersByAddress.begin(); iterator != peersByAddress.end(); iterator++) {
-                EV << "    " << iterator->first.first.str() << ":" << iterator->first.second << " -> " << iterator->second->nodeID << endl;
+            for(it_type iterator = friendsByAddress.begin(); iterator != friendsByAddress.end(); iterator++) {
+                EV << "    " << iterator->first.str() << " -> " << iterator->second->nodeID << endl;
             }
-
             delete msg;
             return;
         }
@@ -209,9 +236,9 @@ void DarknetBaseNode::forwardMessage(DarknetMessage* msg, DarknetPeer *sender) {
     }
 }
 
-        /*
-         * forward a Response to a previously forwarded Message back its path "up"
-         */
+/*
+ * forward a Response to a previously forwarded Message back its path "up"
+ */
 void DarknetBaseNode::forwardResponse(DarknetMessage* msg) {
     msg->setDestNodeID(forwardedIdTable[msg->getRequestMessageID()].c_str());
     forwardedIdTable.erase(msg->getRequestMessageID());
@@ -249,10 +276,9 @@ void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {
     if (msg->isSelfMessage()) {
         handleSelfMessage(msg);
     } else if (msg->getKind() == UDP_I_DATA) {
-        // process incoming packet
         handleUDPMessage(msg);
     } else if (msg->getKind() == UDP_I_ERROR) {
-        EV<< "Ignoring UDP error report\n";
+        EV << "Ignoring UDP error report" << endl;
         delete msg;
     }
     else {

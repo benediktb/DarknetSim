@@ -44,8 +44,8 @@ void DarknetOfflineDetectionNode::connectPeer(std::string nodeID) {
 void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg, DarknetPeer *sender) {
     switch(msg->getType()) {
     case DM_CON_SYN: {
-        if(peers.find(msg->getSrcNodeID()) != peers.end()) {
-            EV << "recieved CON_SYN from: " << msg->getSrcNodeID() << endl;
+        if(friendsByID.find(msg->getSrcNodeID()) != friendsByID.end()) {
+            EV << "Received CON_SYN from: " << msg->getSrcNodeID() << endl;
             DarknetMessage *ack = new DarknetMessage();
             ack->setType(DM_CON_ACK);
             ack->setTTL(defaultTTL);
@@ -56,11 +56,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg, Dar
         break;
     }
     case DM_CON_ACK: {
-        std::string nodeID = msg->getSrcNodeID();
-        if(connected.count(nodeID) == 0) {
-            connected.insert(nodeID);
-            EV << "connection to " << nodeID << "established" << endl;
-        }
+        addActivePeer(msg->getSrcNodeID());
         delete msg;
         break;
     }
@@ -70,30 +66,49 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg, Dar
     }
 }
 
+void DarknetOfflineDetectionNode::addActivePeer(std::string nodeId) {
+    if(connected.count(nodeID) == 0) {
+        connected.insert(nodeID);
+        EV << "connection to " << nodeID << "established" << endl;
+    }
+}
+
 
 /*
  * check if message is of type DM_RCVACK, if so stop resendTimer for according message.
  * if not, send DM_RCVACK to sender and pass it to handleIncomingMessage
  */
 void DarknetOfflineDetectionNode::handleDarknetMessage(DarknetMessage* msg, DarknetPeer *sender) {
-    if( msg->getType() == DM_RCVACK) {
-        long orig_mID = msg->getRequestMessageID();
-        if(rcvack_waiting.count(orig_mID) == 1) {
-            EV << "received RCVACK for message: " << rcvack_waiting[orig_mID].first->getType() << " (id:" <<rcvack_waiting[orig_mID].first->getId() << ")"  << endl;
-            cancelAndDelete(rcvack_waiting[orig_mID].first);
-            rcvack_waiting.erase(orig_mID);
-        }
-        delete msg;
+    if (msg->getType() == DM_RCVACK) {
+        handleRcvAck(msg);
     } else {
-        EV << "send RCVACK for message: " << msg->getType() << " (ID:" << msg->getId() << "/treeID: " << msg->getTreeId() << ")"  << endl;
-        DarknetMessage* ack = new DarknetMessage();
-        ack->setDestNodeID(msg->getSrcNodeID());
-        ack->setType(DM_RCVACK);
-        ack->setTTL(defaultTTL);
-        ack->setRequestMessageID(msg->getId());
-        sendDirectMessage(ack);
+        sendRcvAck(msg);
         DarknetSimpleNode::handleDarknetMessage(msg, sender);
     }
+}
+
+void DarknetOfflineDetectionNode::handleRcvAck(DarknetMessage* msg) {
+    long orig_mID = msg->getRequestMessageID();
+    if(rcvack_waiting.count(orig_mID) == 1) {
+        EV << "received RCVACK for message: " << rcvack_waiting[orig_mID].first->getType() << " (id:" <<rcvack_waiting[orig_mID].first->getId() << ")"  << endl;
+        cancelAndDelete(rcvack_waiting[orig_mID].first);
+        rcvack_waiting.erase(orig_mID);
+    }
+    delete msg;
+}
+
+void DarknetOfflineDetectionNode::sendRcvAck(DarknetMessage* msg) {
+    EV << "send RCVACK for message: " << msg->getType() << " (ID:" << msg->getId() << "/treeID: " << msg->getTreeId() << ")"  << endl;
+    DarknetMessage* ack = new DarknetMessage();
+    ack->setDestNodeID(msg->getSrcNodeID());
+    ack->setType(DM_RCVACK);
+    ack->setTTL(defaultTTL);
+    ack->setRequestMessageID(msg->getId());
+    sendDirectMessage(ack);
+}
+
+void DarknetOfflineDetectionNode::removeInactivePeer(std::string peerId) {
+    connected.erase(peerId);
 }
 
 /*
@@ -118,7 +133,7 @@ void DarknetOfflineDetectionNode::handleSelfMessage(cMessage* msg) {
         } else { /* too many resends; delete resendTimer and remove peer from the connected list */
             EV << "stop resendTimer for message: " << msg << " and remove the peer" << endl;
             emit(sigDropResendExeeded,rcvack_waiting[msgID].first->getTTL());
-            connected.erase(dm->getDestNodeID());
+            removeInactivePeer(dm->getDestNodeID());
             rcvack_waiting.erase(msgID);
 
             delete dm;

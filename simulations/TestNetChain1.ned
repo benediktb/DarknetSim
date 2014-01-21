@@ -15,7 +15,7 @@
 
 package darknetsim_patrick.simulations;
 
-
+import darknetsim.ChurnController;
 import inet.nodes.inet.StandardHost;
 import inet.nodes.inet.Router;
 import inet.networklayer.autorouting.ipv4.IPv4NetworkConfigurator;
@@ -26,6 +26,9 @@ network TestNetChain1
 {
     @display("bgb=424,130");
     submodules:
+        churnController: ChurnController {
+            @display("p=364,90");
+        }
         configurator: IPv4NetworkConfigurator {
             @display("p=54,90;i=block/cogwheel");
         }

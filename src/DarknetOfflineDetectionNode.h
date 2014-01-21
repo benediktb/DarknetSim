@@ -32,11 +32,16 @@ protected:
 
     virtual void initialize(int stage);
     virtual void handleDarknetMessage(DarknetMessage* msg, DarknetPeer *sender);
+    virtual void handleRcvAck(DarknetMessage* msg);
+    virtual void sendRcvAck(DarknetMessage* msg);
     virtual void connectPeer(std::string nodeID);
     virtual void handleIncomingMessage(DarknetMessage* msg, DarknetPeer *sender);
     virtual void handleSelfMessage(cMessage* msg);
     virtual void sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr, int destPort);
 
+    /* To extend/override */
+    virtual void addActivePeer(std::string nodeId);
+    virtual void removeInactivePeer(std::string peerId);
 };
 
 #endif /* DARKNETOFFLINEDETECTIONNODE_H_ */

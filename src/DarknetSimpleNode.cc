@@ -19,7 +19,7 @@
 void DarknetSimpleNode::initialize(int stage) {
     DarknetBaseNode::initialize(stage);
 
-    if (stage == 5) {
+    if (stage == 6) {
         std::vector<std::string> v = cStringTokenizer(par("requestTargets")).asVector();
         double requestIntervalMean = par("requestIntervalMean");
         double requestIntervalVariance = par("requestIntervalVariance");

@@ -13,22 +13,25 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package darknetsim;
+cplusplus {{
 
-simple DarknetBaseNode like inet.applications.IUDPApp {
-    parameters:
-		@class(DarknetBaseNode);
-        @statistic[sigSendDM](record=count,vector?);
-        @statistic[sigUnhandledMSG](record=count,vector?);
-        @statistic[sigDropTtlExeeded](record=count,vector?);
-        @statistic[sigRequestRemainingTTL](record=stats,vector?);
-        @statistic[sigResponseRemainingTTL](record=stats,vector?);
-        int localPort;
-        string nodeID;
-        string friends;
-        int defaultTTL = default(32);
-    gates:
-	    input udpIn;
-	    output udpOut;
-    
+#include <cmodule.h>
+
+// DarknetChurnNode is meant by cModule, but due to circular dependencies, it
+//   can't be defined like that.
+typedef cModule *NodePtr;
+
+enum ChurnMessageType {
+    CHURN_GO_ON = 0,
+    CHURN_GO_OFF = 1
+};
+
+}};
+
+class noncobject NodePtr;
+class noncobject ChurnMessageType;
+
+message ChurnMessage {
+    NodePtr node;
+    ChurnMessageType type;
 }

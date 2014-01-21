@@ -31,12 +31,12 @@ std::vector<DarknetPeer*> RandomwalkNode::findNextHop(DarknetMessage* msg) {
         EV << "ERROR: empty peer list!";
         return std::vector<DarknetPeer*>(0);
     }
-    if(connected.count(msg->getDestNodeID()) == 1 and peers.count(msg->getDestNodeID()) == 1) {
-        return std::vector<DarknetPeer*>(1,peers[msg->getDestNodeID()]);
+    if(connected.count(msg->getDestNodeID()) == 1 and friendsByID.count(msg->getDestNodeID()) == 1) {
+        return std::vector<DarknetPeer*>(1,friendsByID[msg->getDestNodeID()]);
     }else {
         std::set<std::string>::iterator iter = connected.begin();
         std::advance(iter, dblrand() * connected.size());
-        return std::vector<DarknetPeer*>(1,peers[*iter]);
+        return std::vector<DarknetPeer*>(1,friendsByID[*iter]);
     }
 }
 

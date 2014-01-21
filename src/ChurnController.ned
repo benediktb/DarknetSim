@@ -15,20 +15,10 @@
 
 package darknetsim;
 
-simple DarknetBaseNode like inet.applications.IUDPApp {
+simple ChurnController {
     parameters:
-		@class(DarknetBaseNode);
-        @statistic[sigSendDM](record=count,vector?);
-        @statistic[sigUnhandledMSG](record=count,vector?);
-        @statistic[sigDropTtlExeeded](record=count,vector?);
-        @statistic[sigRequestRemainingTTL](record=stats,vector?);
-        @statistic[sigResponseRemainingTTL](record=stats,vector?);
-        int localPort;
-        string nodeID;
-        string friends;
-        int defaultTTL = default(32);
-    gates:
-	    input udpIn;
-	    output udpOut;
-    
+	    @display("i=block/cogwheel");
+	    @class(ChurnController);
+	    bool useTraces = default(false);
+	    string traceFile = default("");
 }

@@ -209,7 +209,8 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
 
 void ChurnController::scheduleChurn(cSimpleModule* node,
         ChurnMessageType type, IRandomDistribution* distribution) {
-    int nextChurnTime = (int) distribution->getNext();
+    // Don't allow for 0 sec of ON/OFF time
+    int nextChurnTime = (int) distribution->getNext() + 1;
     scheduleChurn(node, type, nextChurnTime);
 }
 
@@ -217,11 +218,11 @@ void ChurnController::scheduleChurn(cSimpleModule* node,
 void ChurnController::scheduleChurn(cSimpleModule* node,
         ChurnMessageType type, int time) {
     DarknetChurnNode* churnNode = dynamic_cast<DarknetChurnNode*>(node);
-    ChurnMessage* cmsg = new ChurnMessage();
+    ChurnMessage* cmsg = new ChurnMessage((churnNode->getNodeID() + " " + ChurnMessageTypeToString(type)).c_str());
 
     cmsg->setType(type);
     cmsg->setNode(node);
 
-    EV << "Scheduling churn type " << type << " on node " << churnNode->getNodeID() << " in " << time << endl;
+    EV << "Scheduling churn type " << ChurnMessageTypeToString(type) << " on node " << churnNode->getNodeID() << " in " << time << endl;
     scheduleAt(simTime() + time, cmsg);
 }

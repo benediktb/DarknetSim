@@ -26,6 +26,8 @@ enum ChurnMessageType {
     CHURN_GO_OFF = 1
 };
 
+#define ChurnMessageTypeToString(type) ((type == CHURN_GO_ON) ? "ON" : "OFF")
+
 }};
 
 class noncobject NodePtr;

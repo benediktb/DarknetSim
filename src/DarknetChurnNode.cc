@@ -79,7 +79,8 @@ void DarknetChurnNode::initialize(int stage) {
 
 bool DarknetChurnNode::startApp(IDoneCallback *doneCallback) {
     if (goOnline) {
-        connectAllFriends();
+        DarknetOfflineDetectionNode::startApp(doneCallback);
+        //connectAllFriends(); // will be done by DarknetBaseNode::startApp()
         cDisplayString& dispStr = getParentModule()->getDisplayString();
         dispStr.updateWith("i=device/pc2,green");
     }

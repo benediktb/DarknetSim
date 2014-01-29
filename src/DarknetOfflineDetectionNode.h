@@ -20,14 +20,14 @@
 
 class DarknetOfflineDetectionNode: public DarknetSimpleNode {
 public:
-    DarknetOfflineDetectionNode() : DarknetSimpleNode::DarknetSimpleNode(), resendTimerMean(0), resendTimerVariance(0), resendCounter(0) {};
+    DarknetOfflineDetectionNode() : DarknetSimpleNode::DarknetSimpleNode(), resendTimerMean(0), resendTimerVariance(0), resendCounter(0), rcvack_waiting() {};
     virtual ~DarknetOfflineDetectionNode() {};
 
 protected:
-    std::map<long, std::pair<DarknetMessage*, int> > rcvack_waiting;
     double resendTimerMean;
     double resendTimerVariance;
     int resendCounter;
+    std::map<long, std::pair<DarknetMessage, int> > rcvack_waiting;
     simsignal_t sigDropResendExeeded;
 
     virtual void initialize(int stage);
@@ -38,6 +38,10 @@ protected:
     virtual void handleIncomingMessage(DarknetMessage* msg, DarknetPeer *sender);
     virtual void handleSelfMessage(cMessage* msg);
     virtual void sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr, int destPort);
+
+    virtual bool startApp(IDoneCallback *doneCallback);
+    virtual bool stopApp(IDoneCallback *doneCallback);
+    virtual bool crashApp(IDoneCallback *doneCallback);
 
     /* To extend/override */
     virtual void addActivePeer(std::string nodeId);

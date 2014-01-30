@@ -39,13 +39,17 @@ bool DarknetOfflineDetectionNode::stopApp(IDoneCallback *doneCallback) {
     return crashApp(doneCallback);
 }
 
-bool DarknetOfflineDetectionNode::crashApp(IDoneCallback *doneCallback) {
+void DarknetOfflineDetectionNode::cancelAllRetransmissions() {
     // Cancel all pending timeouts
     std::map<long, std::pair<DarknetMessage, int> >::iterator it;
     for (it = rcvack_waiting.begin(); it != rcvack_waiting.end(); it++) {
         cancelEvent(&it->second.first);
     }
     rcvack_waiting.clear();
+}
+
+bool DarknetOfflineDetectionNode::crashApp(IDoneCallback *doneCallback) {
+    cancelAllRetransmissions();
     return DarknetSimpleNode::crashApp(doneCallback);
 }
 
@@ -86,9 +90,9 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg, Dar
 }
 
 void DarknetOfflineDetectionNode::addActivePeer(std::string nodeId) {
-    if(connected.count(nodeID) == 0) {
-        connected.insert(nodeID);
-        EV << "connection to " << nodeID << "established" << endl;
+    if(connected.count(nodeId) == 0) {
+        connected.insert(nodeId);
+        EV << "connection to " << nodeId << "established" << endl;
     }
 }
 

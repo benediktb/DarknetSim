@@ -21,7 +21,7 @@
 class DarknetOfflineDetectionNode: public DarknetSimpleNode {
 public:
     DarknetOfflineDetectionNode() : DarknetSimpleNode::DarknetSimpleNode(), resendTimerMean(0), resendTimerVariance(0), resendCounter(0), rcvack_waiting() {};
-    virtual ~DarknetOfflineDetectionNode() {};
+    virtual ~DarknetOfflineDetectionNode() { cancelAllRetransmissions(); };
 
 protected:
     double resendTimerMean;
@@ -46,6 +46,9 @@ protected:
     /* To extend/override */
     virtual void addActivePeer(std::string nodeId);
     virtual void removeInactivePeer(std::string peerId);
+
+private:
+    void cancelAllRetransmissions();
 };
 
 #endif /* DARKNETOFFLINEDETECTIONNODE_H_ */

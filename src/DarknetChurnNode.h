@@ -22,11 +22,24 @@
 #include "IRandomDistribution.h"
 #include <NodeOperations.h>
 
+/**
+ * Darknet node with churn support.
+ *
+ * Distributions for on/off-time: See distribution/ subfolder and the factory
+ * class RandomDistributionFactory.
+ *
+ * Signals: Will be emitted when going on/offline, i.e. sigChurnOn collects
+ * offline times when going online.
+ */
 class DarknetChurnNode: public DarknetOfflineDetectionNode {
 
 protected:
     ChurnController* churnController;
     bool goOnline;
+    simtime_t lastSwitch;
+
+    simsignal_t sigChurnOn;
+    simsignal_t sigChurnOff;
 
     /** Distribution for online time (time till next offline time) */
     IRandomDistribution* onTimeDistribution;
@@ -45,7 +58,7 @@ protected:
 
 public:
 
-    DarknetChurnNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode(), goOnline(false) {};
+    DarknetChurnNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode(), goOnline(false), lastSwitch(0) {};
     virtual ~DarknetChurnNode() {};
 
     // To be used by ChurnController

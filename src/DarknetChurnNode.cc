@@ -38,6 +38,9 @@ IRandomDistribution* DarknetChurnNode::getOffTimeDistribution() const {
 void DarknetChurnNode::initialize(int stage) {
     switch(stage) {
     case 0: {
+        sigChurnOff = registerSignal("sigChurnOff");
+        sigChurnOn = registerSignal("sigChurnOn");
+
         churnController = dynamic_cast<ChurnController *>(simulation.getModuleByPath("churnController"));
 
         if (churnController == NULL) {
@@ -83,6 +86,8 @@ bool DarknetChurnNode::startApp(IDoneCallback *doneCallback) {
         //connectAllFriends(); // will be done by DarknetBaseNode::startApp()
         cDisplayString& dispStr = getParentModule()->getDisplayString();
         dispStr.updateWith("i=device/pc2,green");
+        emit(sigChurnOn, simTime() - lastSwitch);
+        lastSwitch = simTime();
     }
     return true;
 }
@@ -95,6 +100,8 @@ bool DarknetChurnNode::crashApp(IDoneCallback *doneCallback) {
     DarknetOfflineDetectionNode::crashApp(doneCallback);
     cDisplayString& dispStr = getParentModule()->getDisplayString();
     dispStr.updateWith("i=device/pc2,red");
+    emit(sigChurnOff, simTime() - lastSwitch);
+    lastSwitch = simTime();
     return true;
 }
 

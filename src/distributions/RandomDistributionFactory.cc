@@ -8,6 +8,8 @@
 #include "UniformDistribution.h"
 #include "PoissonDistribution.h"
 #include "ParetoDistribution.h"
+#include "WeibullDistribution.h"
+#include "LognormalDistribution.h"
 
 IRandomDistribution* RandomDistributionFactory::getDistribution(std::string distributionName, cModule* module, std::string parPrefix) {
     if (distributionName == "exponential") {
@@ -24,6 +26,14 @@ IRandomDistribution* RandomDistributionFactory::getDistribution(std::string dist
         double b = module->par((parPrefix + "DistributionParetoB").c_str()).doubleValue();
         double c = module->par((parPrefix + "DistributionParetoC").c_str()).doubleValue();
         return (IRandomDistribution*) new ParetoDistribution(a, b, c);
+    } else if (distributionName == "weibull") {
+        double a = module->par((parPrefix + "DistributionWeibullA").c_str()).doubleValue();
+        double b = module->par((parPrefix + "DistributionWeibullB").c_str()).doubleValue();
+        return (IRandomDistribution*) new WeibullDistribution(a, b);
+    } else if (distributionName == "lognormal") {
+        double mean = module->par((parPrefix + "DistributionLognormalMean").c_str()).doubleValue();
+        double variance = module->par((parPrefix + "DistributionLognormalVariance").c_str()).doubleValue();
+        return (IRandomDistribution*) new LognormalDistribution(mean, variance);
     }
 
     return (IRandomDistribution*) NULL;

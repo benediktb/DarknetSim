@@ -11,11 +11,7 @@ class ParetoDistribution: public IRandomDistribution {
 protected:
     double a, b, c;
 public:
-    ParetoDistribution(double a, double b, double c) {
-        this->a = a;
-        this->b = b;
-        this->c = c;
-    }
+    ParetoDistribution(double a, double b, double c): a(a), b(b), c(c) {}
 
     virtual double getNext();
 };

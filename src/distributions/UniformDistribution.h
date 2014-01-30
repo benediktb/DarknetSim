@@ -11,9 +11,7 @@ class UniformDistribution: public IRandomDistribution {
 protected:
     double b;
 public:
-    UniformDistribution(double b) {
-        this->b = b;
-    }
+    UniformDistribution(double b): b(b) {}
 
     virtual double getNext();
 };

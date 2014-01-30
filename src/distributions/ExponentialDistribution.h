@@ -11,9 +11,7 @@ class ExponentialDistribution: public IRandomDistribution {
 protected:
     double mean;
 public:
-    ExponentialDistribution(double mean) {
-        this->mean = mean;
-    }
+    ExponentialDistribution(double mean): mean(mean) {}
 
     virtual double getNext();
 };

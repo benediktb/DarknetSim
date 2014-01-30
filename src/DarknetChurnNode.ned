@@ -22,7 +22,8 @@ simple DarknetChurnNode extends DarknetOfflineDetectionNode {
         @statistic[sigChurnOn](record=stats,vector?);
 	    
 		bool startState = default(true);
-		
+
+		// For distributions, see subfolder distributions/ and the factory there
 		string onTimeDistribution = default("exponential");
 		string offTimeDistribution = default("exponential");
 
@@ -32,6 +33,10 @@ simple DarknetChurnNode extends DarknetOfflineDetectionNode {
         double onTimeDistributionParetoA = default(1.2);
         double onTimeDistributionParetoB = default(10);
         double onTimeDistributionParetoC = default(0);
+        double onTimeDistributionWeibullA = default(1.2);
+        double onTimeDistributionWeibullB = default(10);
+		double onTimeDistributionLognormalMean = default(30 * 60);
+		double onTimeDistributionLognormalVariance = default(30 * 60);
 
 		double offTimeDistributionExponentialMean = default(30 * 60);
         double offTimeDistributionUniformB = default(60 * 60);
@@ -39,4 +44,8 @@ simple DarknetChurnNode extends DarknetOfflineDetectionNode {
         double offTimeDistributionParetoA = default(1.2);
         double offTimeDistributionParetoB = default(10);
         double offTimeDistributionParetoC = default(0);
+        double offTimeDistributionWeibullA = default(1.2);
+        double offTimeDistributionWeibullB = default(10);
+		double offTimeDistributionLognormalMean = default(30 * 60);
+		double offTimeDistributionLognormalVariance = default(30 * 60);
 }

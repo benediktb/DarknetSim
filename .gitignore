@@ -9,6 +9,7 @@ libDarknetSim*
 src/DarknetSim*
 src/libDarknetSim*
 simulations/run
+DarknetSim*
 
 #dotfiles
 .cproject

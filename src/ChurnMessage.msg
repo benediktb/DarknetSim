@@ -17,9 +17,8 @@ cplusplus {{
 
 #include <cmodule.h>
 
-// DarknetChurnNode is meant by cModule, but due to circular dependencies, it
-//   can't be defined like that.
-typedef cModule *NodePtr;
+class DarknetChurnNode;
+typedef DarknetChurnNode *NodePtr;
 
 enum ChurnMessageType {
     CHURN_GO_ON = 0,

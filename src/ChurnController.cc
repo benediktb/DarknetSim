@@ -82,23 +82,21 @@ NodeTrace* ChurnController::getTrace(std::string nodeID) {
     }
 }
 
-void ChurnController::doStartup(cSimpleModule* node) {
+void ChurnController::doStartup(DarknetChurnNode* node) {
     Enter_Method_Silent(); // public method, possible context change
-
-    DarknetChurnNode* cnode = dynamic_cast<DarknetChurnNode*>(node);
 
     if (useTraces) {
         doStartupWithTraces(node);
         return;
     }
 
-    if (!cnode->getStartState()) {
-        EV << "Node " << cnode->getNodeID() << " is OFF at the start, scheduling ON" << endl;
-        initShutdown(cnode->getParentModule());
-        scheduleChurn(cnode, CHURN_GO_ON, cnode->getOffTimeDistribution());
+    if (!node->getStartState()) {
+        EV << "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
+        initShutdown(node->getParentModule());
+        scheduleChurn(node, CHURN_GO_ON, node->getOffTimeDistribution());
     } else {
-        EV << "Node " << cnode->getNodeID() << " is ON at the start, scheduling OFF" << endl;
-        scheduleChurn(cnode, CHURN_GO_OFF, cnode->getOnTimeDistribution());
+        EV << "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl;
+        scheduleChurn(node, CHURN_GO_OFF, node->getOnTimeDistribution());
    }
 }
 
@@ -113,27 +111,26 @@ int ChurnController::getNextTraceSwitchTime(NodeTrace* trace) {
     }
 }
 
-void ChurnController::doStartupWithTraces(cSimpleModule* node) {
-    DarknetChurnNode* cnode = dynamic_cast<DarknetChurnNode*>(node);
-    NodeTrace* trace = getTrace(cnode->getNodeID());
+void ChurnController::doStartupWithTraces(DarknetChurnNode* node) {
+    NodeTrace* trace = getTrace(node->getNodeID());
 
     int nextSwitchTime = getNextTraceSwitchTime(trace);
 
     if (nextSwitchTime == -1) {
-        EV << "Node " << cnode->getNodeID() << " is OFF at the start, won't go on at all " <<
+        EV << "Node " << node->getNodeID() << " is OFF at the start, won't go on at all " <<
                 "-OR- trace for this node is missing" << endl;
-        initShutdown(cnode->getParentModule());
+        initShutdown(node->getParentModule());
         return;
     }
 
     if (!trace->startState) {
-        EV << "Node " << cnode->getNodeID() << " is OFF at the start, scheduling ON" << endl;
-        cnode->setGoOnline(false);
-        initShutdown(cnode->getParentModule());
-        scheduleChurn(cnode, CHURN_GO_ON, nextSwitchTime);
+        EV << "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
+        node->setGoOnline(false);
+        initShutdown(node->getParentModule());
+        scheduleChurn(node, CHURN_GO_ON, nextSwitchTime);
     } else {
-        EV << "Node " << cnode->getNodeID() << " is ON at the start, scheduling OFF" << endl;
-        scheduleChurn(cnode, CHURN_GO_OFF, nextSwitchTime);
+        EV << "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl;
+        scheduleChurn(node, CHURN_GO_OFF, nextSwitchTime);
    }
 }
 
@@ -171,7 +168,7 @@ void ChurnController::handleMessage(cMessage* msg) {
 }
 
 void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
-    DarknetChurnNode* node = dynamic_cast<DarknetChurnNode*>(cmsg->getNode());
+    DarknetChurnNode* node = cmsg->getNode();
 
     int nextSwitchTime;
 
@@ -207,7 +204,7 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
     delete cmsg;
 }
 
-void ChurnController::scheduleChurn(cSimpleModule* node,
+void ChurnController::scheduleChurn(DarknetChurnNode* node,
         ChurnMessageType type, IRandomDistribution* distribution) {
     // Don't allow for 0 sec of ON/OFF time
     int nextChurnTime = (int) distribution->getNext() + 1;
@@ -215,14 +212,13 @@ void ChurnController::scheduleChurn(cSimpleModule* node,
 }
 
 
-void ChurnController::scheduleChurn(cSimpleModule* node,
+void ChurnController::scheduleChurn(DarknetChurnNode* node,
         ChurnMessageType type, int time) {
-    DarknetChurnNode* churnNode = dynamic_cast<DarknetChurnNode*>(node);
-    ChurnMessage* cmsg = new ChurnMessage((churnNode->getNodeID() + " " + ChurnMessageTypeToString(type)).c_str());
+    ChurnMessage* cmsg = new ChurnMessage((node->getNodeID() + " " + ChurnMessageTypeToString(type)).c_str());
 
     cmsg->setType(type);
     cmsg->setNode(node);
 
-    EV << "Scheduling churn type " << ChurnMessageTypeToString(type) << " on node " << churnNode->getNodeID() << " in " << time << endl;
+    EV << "Scheduling churn type " << ChurnMessageTypeToString(type) << " on node " << node->getNodeID() << " in " << time << endl;
     scheduleAt(simTime() + time, cmsg);
 }

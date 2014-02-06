@@ -29,14 +29,13 @@ typedef struct {
     unsigned int position;
 } NodeTrace;
 
+class DarknetChurnNode;
+
 /**
  * Can be used with pre-defined traces. Trace file format is as follows (one
  * node per line):
  * <node ID>;<start state 0/1 == OFF/ON>;<comma-separated list of integer
  * ON/OFF durations>
- *
- * Note: cSimpleModule* == DarknetChurnNode*. Can't be declared directly because
- * of circular dependencies.
  *
  * Note: cModule* == StandardHost*, parent of DarknetChurnNode* (usually, but
  * not necessarily, therefore a more common type is used here).
@@ -50,7 +49,7 @@ private:
     NodeTrace* getTrace(std::string nodeID);
     int getNextTraceSwitchTime(NodeTrace* trace);
 
-    void doStartupWithTraces(cSimpleModule* node);
+    void doStartupWithTraces(DarknetChurnNode* node);
     void initStart(cModule* parentModule);
     void initShutdown(cModule* parentModule);
 
@@ -61,8 +60,8 @@ protected:
     virtual void handleChurnMessage(ChurnMessage* cmsg);
 
     void initOperation(cModule* parentModule, NodeOperation* operation);
-    virtual void scheduleChurn(cSimpleModule* node, ChurnMessageType type, IRandomDistribution* distribution);
-    virtual void scheduleChurn(cSimpleModule* node, ChurnMessageType type, int time);
+    virtual void scheduleChurn(DarknetChurnNode* node, ChurnMessageType type, IRandomDistribution* distribution);
+    virtual void scheduleChurn(DarknetChurnNode* node, ChurnMessageType type, int time);
 
 public:
     ChurnController(): cSimpleModule::cSimpleModule(), lifecycleController(new LifecycleController()), useTraces(false) {}
@@ -74,7 +73,7 @@ public:
      * Used at initialization by DarknetChurnNode. Will crash when used by
      * other node type (parameter "node" is casted to DarknetChurnNode*).
      */
-    virtual void doStartup(cSimpleModule* node);
+    virtual void doStartup(DarknetChurnNode* node);
 };
 
 #endif /* CHURNCONTROLLER_H_ */

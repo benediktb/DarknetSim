@@ -16,9 +16,8 @@
 // cplusplus {{
 #include <cmodule.h>
 
-
-
-typedef cModule *NodePtr;
+class DarknetChurnNode;
+typedef DarknetChurnNode *NodePtr;
 
 enum ChurnMessageType {
     CHURN_GO_ON = 0,

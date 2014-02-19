@@ -27,7 +27,7 @@ protected:
     double resendTimerMean;
     double resendTimerVariance;
     int resendCounter;
-    std::map<long, std::pair<DarknetMessage, int> > rcvack_waiting;
+    std::map<long, std::pair<DarknetMessage*, int> > rcvack_waiting;
     simsignal_t sigDropResendExeeded;
 
     virtual void initialize(int stage);

@@ -4,7 +4,8 @@ out/*
 src/results
 
 #files
-Makefile*
+Makefile
+Makefile.vc
 libDarknetSim*
 src/DarknetSim*
 src/libDarknetSim*

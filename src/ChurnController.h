@@ -42,6 +42,8 @@ class DarknetChurnNode;
  */
 class ChurnController: public cSimpleModule {
 private:
+    bool useChurn;
+
     LifecycleController* lifecycleController;
     bool useTraces;
     std::map<std::string, NodeTrace*> nodeTraces;

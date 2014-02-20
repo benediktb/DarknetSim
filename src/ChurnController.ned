@@ -19,6 +19,9 @@ simple ChurnController {
     parameters:
 	    @display("i=block/cogwheel");
 	    @class(ChurnController);
+	    
+        bool useChurn = default(true);
+	    
 	    bool useTraces = default(false);
 	    string traceFile = default("");
 }

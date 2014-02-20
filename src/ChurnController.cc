@@ -21,6 +21,13 @@
 Define_Module(ChurnController);
 
 void ChurnController::initialize() {
+    useChurn = par("useChurn").boolValue();
+
+    if (!useChurn) {
+        EV << "Not using churn" << endl;
+        return;
+    }
+
     useTraces = par("useTraces").boolValue();
 
     if (useTraces) {
@@ -84,6 +91,10 @@ NodeTrace* ChurnController::getTrace(std::string nodeID) {
 
 void ChurnController::doStartup(DarknetChurnNode* node) {
     Enter_Method_Silent(); // public method, possible context change
+
+    if (!useChurn) {
+        return;
+    }
 
     if (useTraces) {
         doStartupWithTraces(node);

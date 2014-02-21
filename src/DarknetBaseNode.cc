@@ -28,7 +28,7 @@ std::string DarknetBaseNode::getNodeID() {
 
 bool DarknetBaseNode::startApp(IDoneCallback *doneCallback) {
     // Default startup: Bind socket & connect to friends
-    connectAllFriends();
+    //connectAllFriends();
     return true;
 }
 
@@ -60,6 +60,7 @@ void DarknetBaseNode::initialize(int stage) {
     case 0:
         localPort = par("localPort");
         socket.setOutputGate(gate("udpOut"));
+        socket.bind(localPort);
 
         nodeID = par("nodeID").stdstringValue();
         defaultTTL = par("defaultTTL");
@@ -92,18 +93,12 @@ void DarknetBaseNode::initialize(int stage) {
         }}
 
         break;
-        /* Here used to be socket binding & connecting to friends. However,
-         * as initialize() is only run at the very beginning (and not when a
-         * node restarts), those things might be needed multiple times later on.
-         * It all takes place now in startApp().
-         */
     }
 
     AppBase::initialize(stage);
 }
 
 void DarknetBaseNode::connectAllFriends() {
-    socket.bind(localPort);
     for(std::map<std::string, DarknetPeer*>::iterator iter = friendsByID.begin(); iter != friendsByID.end(); iter++) {
         connectPeer(iter->second->nodeID);
     }

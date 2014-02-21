@@ -19,14 +19,6 @@
 
 Define_Module(DarknetChurnNode);
 
-void DarknetChurnNode::setGoOnline(bool goOnline) {
-    this->goOnline = goOnline;
-}
-
-bool DarknetChurnNode::getStartState() const {
-    return par("startState").boolValue();
-}
-
 IRandomDistribution* DarknetChurnNode::getOnTimeDistribution() const {
     return onTimeDistribution;
 }
@@ -42,14 +34,13 @@ void DarknetChurnNode::initialize(int stage) {
         sigChurnOff = registerSignal("sigChurnOff");
         sigChurnOn = registerSignal("sigChurnOn");
 
+        startState = par("startState").boolValue();
+
         churnController = dynamic_cast<ChurnController *>(simulation.getModuleByPath("churnController"));
 
         if (churnController == NULL) {
             error("Could not find ChurnController. Is there one in the network (with name 'churnController')?");
         }
-
-        /* Check whether to start at all */
-        goOnline = par("startState").boolValue();
 
         /* Setup online time distribution */
         std::string onDist = par("onTimeDistribution").stringValue();
@@ -64,33 +55,66 @@ void DarknetChurnNode::initialize(int stage) {
         if (offTimeDistribution == NULL) {
             error(("Unknown random distribution: " + offDist).c_str());
         }
+        churnController->doStartup(this);
 
         break;
     }
     case 3:
-        /* If not started at the beginning: Stop app again (is automatically
-         * started in stage 3 by AppBase) before connections are built up.
-         */
-        churnController->doStartup(this);
         break;
     }
 
-    /* Run super class initialization until socket binding (clashes with
-     *   offline nodes, therefore moved to startApp() )
-     */
     DarknetOfflineDetectionNode::initialize(stage);
 }
 
-bool DarknetChurnNode::startApp(IDoneCallback *doneCallback) {
-    if (goOnline) {
-        DarknetOfflineDetectionNode::startApp(doneCallback);
-        //connectAllFriends(); // will be done by DarknetBaseNode::startApp()
-        cDisplayString& dispStr = getParentModule()->getDisplayString();
-        dispStr.updateWith("i=device/pc2,green");
-        emit(sigChurnOn, simTime() - lastSwitch);
-        emit(sigChurnOnOff, 1);
-        lastSwitch = simTime();
+void DarknetChurnNode::handleUDPMessage(cMessage* msg) {
+    if (isOnline) {
+        DarknetOfflineDetectionNode::handleUDPMessage(msg);
+    } else {
+        // Received UDP packet while offline: Discard
+        delete msg;
     }
+}
+
+void DarknetChurnNode::sendToUDP(DarknetMessage *msg, int srcPort, const IPvXAddress& destAddr, int destPort) {
+    if (isOnline) {
+        DarknetOfflineDetectionNode::sendToUDP(msg, srcPort, destAddr, destPort);
+    } else {
+        error("Tried to send UDP packet while offline.");
+    }
+}
+
+
+void DarknetChurnNode::goOnline() {
+    cDisplayString& dispStr = getParentModule()->getDisplayString();
+    dispStr.updateWith("i=device/pc2,green");
+    emit(sigChurnOn, simTime() - lastSwitch);
+    emit(sigChurnOnOff, 1);
+    lastSwitch = simTime();
+    isOnline = true;
+    connectAllFriends();
+}
+
+void DarknetChurnNode::markAsOffline() {
+    cDisplayString& dispStr = getParentModule()->getDisplayString();
+    dispStr.updateWith("i=device/pc2,red");
+}
+
+void DarknetChurnNode::goOffline() {
+    DarknetOfflineDetectionNode::stopApp(NULL);
+    markAsOffline();
+    emit(sigChurnOff, simTime() - lastSwitch);
+    emit(sigChurnOnOff, 0);
+    lastSwitch = simTime();
+    isOnline = false;
+}
+
+bool DarknetChurnNode::startApp(IDoneCallback *doneCallback) {
+    if (startState) {
+        goOnline();
+    } else {
+        markAsOffline();
+    }
+    DarknetOfflineDetectionNode::startApp(doneCallback);
     return true;
 }
 
@@ -99,12 +123,8 @@ bool DarknetChurnNode::stopApp(IDoneCallback *doneCallback) {
 }
 
 bool DarknetChurnNode::crashApp(IDoneCallback *doneCallback) {
+    //goOffline();
     DarknetOfflineDetectionNode::crashApp(doneCallback);
-    cDisplayString& dispStr = getParentModule()->getDisplayString();
-    dispStr.updateWith("i=device/pc2,red");
-    emit(sigChurnOff, simTime() - lastSwitch);
-    emit(sigChurnOnOff, 0);
-    lastSwitch = simTime();
     return true;
 }
 

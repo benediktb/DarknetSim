@@ -32,10 +32,11 @@
  * offline times when going online.
  */
 class DarknetChurnNode: public DarknetOfflineDetectionNode {
-
+    friend class ChurnController;
 protected:
     ChurnController* churnController;
-    bool goOnline;
+    bool startState;
+    bool isOnline;
     simtime_t lastSwitch;
 
     simsignal_t sigChurnOnOff;
@@ -48,6 +49,9 @@ protected:
     /** Distribution for offline time (time till next online time) */
     IRandomDistribution* offTimeDistribution;
 
+    virtual void sendToUDP(DarknetMessage *msg, int srcPort, const IPvXAddress& destAddr, int destPort);
+    virtual void handleUDPMessage(cMessage* msg);
+
     // To extend/overwrite:
     virtual void initialize(int stage);
 
@@ -57,14 +61,16 @@ protected:
 
     virtual std::vector<DarknetPeer*> findNextHop(DarknetMessage* msg);
 
+    // To be used by ChurnController
+    virtual void goOnline();
+    virtual void goOffline();
+    virtual void markAsOffline();
+
 public:
 
-    DarknetChurnNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode(), goOnline(false), lastSwitch(0) {};
+    DarknetChurnNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode(), isOnline(false), lastSwitch(0) {};
     virtual ~DarknetChurnNode() {};
 
-    // To be used by ChurnController
-    void setGoOnline(bool goOnline);
-    bool getStartState() const;
     IRandomDistribution* getOnTimeDistribution() const;
     IRandomDistribution* getOffTimeDistribution() const;
 

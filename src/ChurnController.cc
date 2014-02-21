@@ -101,9 +101,9 @@ void ChurnController::doStartup(DarknetChurnNode* node) {
         return;
     }
 
-    if (!node->getStartState()) {
+    if (!node->startState) {
         EV << "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
-        initShutdown(node->getParentModule());
+        //initShutdown(node->getParentModule());
         scheduleChurn(node, CHURN_GO_ON, node->getOffTimeDistribution());
     } else {
         EV << "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl;
@@ -130,14 +130,15 @@ void ChurnController::doStartupWithTraces(DarknetChurnNode* node) {
     if (nextSwitchTime == -1) {
         EV << "Node " << node->getNodeID() << " is OFF at the start, won't go on at all " <<
                 "-OR- trace for this node is missing" << endl;
-        initShutdown(node->getParentModule());
+        //initShutdown(node->getParentModule());
+        node->startState = false;
         return;
     }
 
+    node->startState = trace->startState;
     if (!trace->startState) {
         EV << "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
-        node->setGoOnline(false);
-        initShutdown(node->getParentModule());
+        //initShutdown(node->getParentModule());
         scheduleChurn(node, CHURN_GO_ON, nextSwitchTime);
     } else {
         EV << "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl;
@@ -194,8 +195,9 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
     }
 
     if (cmsg->getType() == CHURN_GO_ON) {
-        node->setGoOnline(true);
-        initStart(node->getParentModule());
+        //node->setGoOnline(true);
+        //initStart(node->getParentModule());
+        node->goOnline();
 
         if (!useTraces) {
             scheduleChurn(node, CHURN_GO_OFF, node->getOnTimeDistribution());
@@ -203,8 +205,9 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
             scheduleChurn(node, CHURN_GO_OFF, nextSwitchTime);
         }
     } else {
-        node->setGoOnline(false);
-        initShutdown(node->getParentModule());
+        //node->setGoOnline(false);
+        //initShutdown(node->getParentModule());
+        node->goOffline();
 
         if (!useTraces) {
             scheduleChurn(node, CHURN_GO_ON, node->getOffTimeDistribution());

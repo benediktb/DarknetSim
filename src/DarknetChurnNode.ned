@@ -18,8 +18,9 @@ package darknetsim;
 simple DarknetChurnNode extends DarknetOfflineDetectionNode {
     parameters:
 	    @class(DarknetChurnNode);
-        @statistic[sigChurnOff](record=stats,vector?);
-        @statistic[sigChurnOn](record=stats,vector?);
+        @statistic[sigChurnOnOff](record=vector);
+        @statistic[sigChurnOff](record=stats,vector);
+        @statistic[sigChurnOn](record=stats,vector);
 	    
 		bool startState = default(true);
 

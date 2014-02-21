@@ -38,6 +38,7 @@ protected:
     bool goOnline;
     simtime_t lastSwitch;
 
+    simsignal_t sigChurnOnOff;
     simsignal_t sigChurnOn;
     simsignal_t sigChurnOff;
 

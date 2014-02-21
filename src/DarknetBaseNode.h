@@ -88,6 +88,7 @@ protected:
     virtual bool sendMessage(DarknetMessage* msg);
     virtual void sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr, int destPort);
     virtual void sendToUDP(DarknetMessage *msg, int srcPort, const IPvXAddress& destAddr, int destPort);
+    virtual IPv4Address getLocalIPv4Address();
 
     virtual void handleUDPMessage(cMessage* msg);
     virtual void handleMessageWhenUp(cMessage *msg);

@@ -15,6 +15,7 @@
 
 #include <omnetpp.h>
 #include <IPvXAddressResolver.h>
+#include <RoutingTable.h>
 #include "DarknetBaseNode.h"
 #include <UDPPacket.h>
 #include <UDPControlInfo.h>
@@ -110,10 +111,9 @@ void DarknetBaseNode::connectAllFriends() {
 
 void DarknetBaseNode::sendToUDP(DarknetMessage *msg, int srcPort,
         const IPvXAddress& destAddr, int destPort) {
-    EV << "Sending UDP packet: " << getParentModule()->getFullName() << " --> ";
-    EV << msg->toString() << "  (" << msg->getByteLength() << " bytes)";
-    //EV << " --> " << IPvXAddressResolver().findHostWithAddress(destAddr)->getFullName();
-    EV << " (" << destAddr << ":" << destPort << ")" << endl;
+    EV << "Sending UDP packet: " << getLocalIPv4Address() << " to ";
+    EV << destAddr << ":" << destPort << ", content: ";
+    EV << msg->toString() << " (" << msg->getByteLength() << " bytes)" << endl;
 
     socket.sendTo(msg, destAddr, destPort);
 }
@@ -158,6 +158,21 @@ bool DarknetBaseNode::sendMessage(DarknetMessage* msg) {
     }
 }
 
+/**
+ * Gets the first, non-loopback IPv4 address assigned to this host.
+ */
+IPv4Address DarknetBaseNode::getLocalIPv4Address() {
+    RoutingTable* rt = (RoutingTable*) IPvXAddressResolver().routingTableOf(this->getParentModule());
+    std::vector<IPv4Address> addresses = rt->gatherAddresses();
+
+    for (std::vector<IPv4Address>::iterator it = addresses.begin(); it != addresses.end(); it++) {
+        if (!it->equals(IPv4Address::LOOPBACK_ADDRESS))
+            return *it;
+    }
+
+    throw new std::runtime_error("No local IPv4 address found!");
+}
+
 void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
     DarknetMessage* dm = dynamic_cast<DarknetMessage*>(msg);
     if (dm != NULL) {
@@ -176,7 +191,7 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
             return;
         }
         DarknetPeer* sender = it->second;
-        EV << "Received DarknetMessage from " << sender->address.first << ", peer " << sender->nodeID << endl;
+        EV << "Received DarknetMessage at " << getLocalIPv4Address() << " from " << sender->address.first << ", peer " << sender->nodeID << endl;
         handleDarknetMessage(dm, sender);
     } else {
         EV<< "received an unknown cMessage: " << msg << endl;

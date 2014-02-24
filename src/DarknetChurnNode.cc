@@ -19,17 +19,10 @@
 
 Define_Module(DarknetChurnNode);
 
-IRandomDistribution* DarknetChurnNode::getOnTimeDistribution() const {
-    return onTimeDistribution;
-}
-
-IRandomDistribution* DarknetChurnNode::getOffTimeDistribution() const {
-    return offTimeDistribution;
-}
-
 void DarknetChurnNode::initialize(int stage) {
-    switch(stage) {
-    case 0: {
+    DarknetOfflineDetectionNode::initialize(stage);
+
+    if (stage == 0) {
         sigChurnOnOff = registerSignal("sigChurnOnOff");
         sigChurnOff = registerSignal("sigChurnOff");
         sigChurnOn = registerSignal("sigChurnOn");
@@ -42,28 +35,24 @@ void DarknetChurnNode::initialize(int stage) {
             error("Could not find ChurnController. Is there one in the network (with name 'churnController')?");
         }
 
-        /* Setup online time distribution */
+        // Setup online time distribution
         std::string onDist = par("onTimeDistribution").stringValue();
         onTimeDistribution = RandomDistributionFactory::getDistribution(onDist, this, "onTime");
         if (onTimeDistribution == NULL) {
             error(("Unknown random distribution: " + onDist).c_str());
         }
 
-        /* Setup offline time distribution */
+        // Setup offline time distribution
         std::string offDist = par("offTimeDistribution").stringValue();
         offTimeDistribution = RandomDistributionFactory::getDistribution(offDist, this, "offTime");
         if (offTimeDistribution == NULL) {
             error(("Unknown random distribution: " + offDist).c_str());
         }
+
+        /* Setup churn controller, i.e. schedule churn events and set online
+         * state if needed */
         churnController->doStartup(this);
-
-        break;
     }
-    case 3:
-        break;
-    }
-
-    DarknetOfflineDetectionNode::initialize(stage);
 }
 
 void DarknetChurnNode::handleUDPMessage(cMessage* msg) {
@@ -85,6 +74,7 @@ void DarknetChurnNode::sendToUDP(DarknetMessage *msg, int srcPort, const IPvXAdd
 
 
 void DarknetChurnNode::goOnline() {
+    Enter_Method_Silent(); // possible context change from churnController
     cDisplayString& dispStr = getParentModule()->getDisplayString();
     dispStr.updateWith("i=device/pc2,green");
     emit(sigChurnOn, simTime() - lastSwitch);
@@ -100,7 +90,8 @@ void DarknetChurnNode::markAsOffline() {
 }
 
 void DarknetChurnNode::goOffline() {
-    DarknetOfflineDetectionNode::stopApp(NULL);
+    Enter_Method_Silent(); // possible context change from churnController
+    DarknetOfflineDetectionNode::crashApp(NULL);
     markAsOffline();
     emit(sigChurnOff, simTime() - lastSwitch);
     emit(sigChurnOnOff, 0);
@@ -119,12 +110,12 @@ bool DarknetChurnNode::startApp(IDoneCallback *doneCallback) {
 }
 
 bool DarknetChurnNode::stopApp(IDoneCallback *doneCallback) {
-    return crashApp(doneCallback);
+    return DarknetOfflineDetectionNode::stopApp(doneCallback);
 }
 
 bool DarknetChurnNode::crashApp(IDoneCallback *doneCallback) {
-    //goOffline();
-    DarknetOfflineDetectionNode::crashApp(doneCallback);
+    goOffline();
+    //DarknetOfflineDetectionNode::crashApp(doneCallback);
     return true;
 }
 

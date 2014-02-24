@@ -43,6 +43,6 @@ void DarknetSimpleNode::handleSelfMessage(cMessage *msg) {
     if(dynamic_cast<PingTimer*>(msg) != NULL) {
         EV << "sending PING to: " << msg->getName();
         sendMessage(makeRequest(msg->getName()));
+        delete msg;
     }
-    delete msg;
 }

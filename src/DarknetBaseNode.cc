@@ -27,8 +27,6 @@ std::string DarknetBaseNode::getNodeID() {
 }
 
 bool DarknetBaseNode::startApp(IDoneCallback *doneCallback) {
-    // Default startup: Bind socket & connect to friends
-    //connectAllFriends();
     return true;
 }
 
@@ -165,19 +163,19 @@ IPv4Address DarknetBaseNode::getLocalIPv4Address() {
             return *it;
     }
 
-    throw new std::runtime_error("No local IPv4 address found!");
+    error("No local IPv4 address found!");
+    throw; // make compiler happy, exceptions gets thrown in error()
 }
 
 void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
     DarknetMessage* dm = dynamic_cast<DarknetMessage*>(msg);
     if (dm != NULL) {
         UDPDataIndication* udi = (UDPDataIndication*) dm->getControlInfo();
-        UDPAddress* srcAddr = new UDPAddress(udi->getSrcAddr(), udi->getSrcPort());
         typedef std::map<IPvXAddress, DarknetPeer*>::iterator it_type;
         it_type it = friendsByAddress.find(udi->getSrcAddr());
         if (friendsByAddress.end() == it) {
             EV << "Could not get sending peer for message: " << msg << endl;
-            EV << "  + Source address: " << srcAddr->first.str() << ":" << srcAddr->second << endl;
+            EV << "  + Source address: " << udi->getSrcAddr().str() << ":" << udi->getSrcPort() << endl;
             EV << "  + Content of address -> peer map: " << endl;
             for(it_type iterator = friendsByAddress.begin(); iterator != friendsByAddress.end(); iterator++) {
                 EV << "    " << iterator->first.str() << " -> " << iterator->second->nodeID << endl;
@@ -251,7 +249,7 @@ void DarknetBaseNode::forwardMessage(DarknetMessage* msg, DarknetPeer *sender) {
  * forward a Response to a previously forwarded Message back its path "up"
  */
 void DarknetBaseNode::forwardResponse(DarknetMessage* msg) {
-    msg->setDestNodeID(forwardedIdTable[msg->getRequestMessageID()].c_str());
+    msg->setDestNodeID(forwardedIdTable.at(msg->getRequestMessageID()).c_str());
     forwardedIdTable.erase(msg->getRequestMessageID());
     sendMessage(msg);
 }

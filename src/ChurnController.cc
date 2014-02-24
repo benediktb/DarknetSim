@@ -31,52 +31,70 @@ void ChurnController::initialize() {
     useTraces = par("useTraces").boolValue();
 
     if (useTraces) {
-        EV << "Using trace file for churn" << endl;
-
-        typedef std::vector<std::string> SV;
-        typedef SV::iterator svIt;
-
-        std::ifstream tracefile(par("traceFile").stringValue());
-        SV nodeStrings;
-
-        if (tracefile.is_open()) {
-            std::string line;
-            while (getline(tracefile, line)) {
-                nodeStrings.push_back(line);
-            }
-            tracefile.close();
-        } else {
-            error(("Unable to open trace file. Maybe wrong working directory: " +
-                    std::string(getcwd(NULL, 0))).c_str());
-        }
-
-        nodeTraces = std::map<std::string, NodeTrace*>();
-
-        for (svIt nIt = nodeStrings.begin(); nIt != nodeStrings.end(); nIt++) {
-            SV lineParts = cStringTokenizer(nIt->c_str(), ";").asVector();
-
-            if (lineParts.size() != 3) {
-                error(("Malformed line in trace file: " + *nIt).c_str());
-            }
-
-            NodeTrace* trace = new NodeTrace();
-
-            trace->nodeID = new std::string(lineParts[0]);
-            std::string stateString = lineParts[1];
-            trace->startState = (stateString == "1");
-
-            std::vector<int> switchTimesVec = cStringTokenizer(lineParts[2].c_str(), ",").asIntVector();
-            // Make cleanly allocated copy
-            std::vector<int>* switchTimes = new std::vector<int>(switchTimesVec);
-
-            trace->switchTimes = switchTimes;
-            trace->position = 0;
-            nodeTraces.insert(make_pair(*trace->nodeID, trace));
-         }
-
-        EV << "Loaded " << nodeTraces.size() << " traces from file" << endl;
+        parseTraceFile(par("traceFile").stdstringValue());
     }
 
+}
+
+std::vector<std::string>* ChurnController::readNodesFromTraceFile(std::ifstream& tracefile) {
+    std::vector<std::string>* nodeStrings = new std::vector<std::string>();
+
+    if (tracefile.is_open()) {
+        std::string line;
+        while (getline(tracefile, line)) {
+            nodeStrings->push_back(line);
+        }
+        tracefile.close();
+    } else {
+        return NULL;
+    }
+
+    return nodeStrings;
+}
+
+void ChurnController::parseNodeLineFromTraceFile(std::map<std::string, NodeTrace*>& nodeTraces, std::string line) {
+    std::vector<std::string> lineParts = cStringTokenizer(line.c_str(), ";").asVector();
+
+    if (lineParts.size() != 3) {
+        error(("Malformed line in trace file: `" + line + "'").c_str());
+    }
+
+    NodeTrace* trace = new NodeTrace();
+
+    trace->nodeID = new std::string(lineParts[0]);
+
+    std::string stateString = lineParts[1];
+    trace->startState = (stateString == "1");
+
+    std::vector<int> switchTimesVec = cStringTokenizer(lineParts[2].c_str(), ",").asIntVector();
+    // Make cleanly allocated copy
+    std::vector<int>* switchTimes = new std::vector<int>(switchTimesVec);
+    trace->switchTimes = switchTimes;
+
+    trace->position = 0;
+    nodeTraces.insert(make_pair(*trace->nodeID, trace));
+}
+
+void ChurnController::parseTraceFile(std::string filename) {
+    EV << "Using trace file `" << filename << "' for churn data" << endl;
+
+    std::ifstream tracefile(filename.c_str());
+    std::vector<std::string>* nodeStrings = readNodesFromTraceFile(tracefile);
+
+    if (nodeStrings == NULL) {
+        error(("Unable to open trace file. Maybe wrong working directory: `" +
+             std::string(getcwd(NULL, 0)) + "'").c_str());
+    }
+
+    nodeTraces = std::map<std::string, NodeTrace*>();
+
+    std::vector<std::string>::iterator nIt;
+    for (nIt = nodeStrings->begin(); nIt != nodeStrings->end(); nIt++) {
+        parseNodeLineFromTraceFile(nodeTraces, *nIt);
+    }
+
+    EV << "Loaded " << nodeTraces.size() << " traces from file" << endl;
+    delete nodeStrings;
 }
 
 NodeTrace* ChurnController::getTrace(std::string nodeID) {
@@ -103,11 +121,10 @@ void ChurnController::doStartup(DarknetChurnNode* node) {
 
     if (!node->startState) {
         EV << "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
-        //initShutdown(node->getParentModule());
-        scheduleChurn(node, CHURN_GO_ON, node->getOffTimeDistribution());
+        scheduleChurn(node, CHURN_GO_ON, node->offTimeDistribution);
     } else {
         EV << "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl;
-        scheduleChurn(node, CHURN_GO_OFF, node->getOnTimeDistribution());
+        scheduleChurn(node, CHURN_GO_OFF, node->onTimeDistribution);
    }
 }
 
@@ -130,7 +147,6 @@ void ChurnController::doStartupWithTraces(DarknetChurnNode* node) {
     if (nextSwitchTime == -1) {
         EV << "Node " << node->getNodeID() << " is OFF at the start, won't go on at all " <<
                 "-OR- trace for this node is missing" << endl;
-        //initShutdown(node->getParentModule());
         node->startState = false;
         return;
     }
@@ -138,29 +154,11 @@ void ChurnController::doStartupWithTraces(DarknetChurnNode* node) {
     node->startState = trace->startState;
     if (!trace->startState) {
         EV << "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
-        //initShutdown(node->getParentModule());
-        scheduleChurn(node, CHURN_GO_ON, nextSwitchTime);
+         scheduleChurn(node, CHURN_GO_ON, nextSwitchTime);
     } else {
         EV << "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl;
         scheduleChurn(node, CHURN_GO_OFF, nextSwitchTime);
    }
-}
-
-void ChurnController::initOperation(cModule* parentModule, NodeOperation* operation) {
-    std::map<std::string,std::string>* params = new std::map<std::string,std::string>();
-    operation->initialize(parentModule, *params);
-
-    lifecycleController->initiateOperation(operation, NULL);
-}
-
-void ChurnController::initStart(cModule* parentModule) {
-    NodeStartOperation* op = new NodeStartOperation();
-    initOperation(parentModule, op);
-}
-
-void ChurnController::initShutdown(cModule* parentModule) {
-    NodeShutdownOperation* op = new NodeShutdownOperation();
-    initOperation(parentModule, op);
 }
 
 void ChurnController::handleMessage(cMessage* msg) {
@@ -195,32 +193,29 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
     }
 
     if (cmsg->getType() == CHURN_GO_ON) {
-        //node->setGoOnline(true);
-        //initStart(node->getParentModule());
         node->goOnline();
 
         if (!useTraces) {
-            scheduleChurn(node, CHURN_GO_OFF, node->getOnTimeDistribution());
+            scheduleChurn(node, CHURN_GO_OFF, node->onTimeDistribution);
         } else if (nextSwitchTime > -1) {
             scheduleChurn(node, CHURN_GO_OFF, nextSwitchTime);
         }
     } else {
-        //node->setGoOnline(false);
-        //initShutdown(node->getParentModule());
         node->goOffline();
 
         if (!useTraces) {
-            scheduleChurn(node, CHURN_GO_ON, node->getOffTimeDistribution());
+            scheduleChurn(node, CHURN_GO_ON, node->offTimeDistribution);
         } else if (nextSwitchTime > -1) {
             scheduleChurn(node, CHURN_GO_ON, nextSwitchTime);
         }
     }
+
     delete cmsg;
 }
 
 void ChurnController::scheduleChurn(DarknetChurnNode* node,
         ChurnMessageType type, IRandomDistribution* distribution) {
-    // Don't allow for 0 sec of ON/OFF time
+    // Don't allow for 0 sec of ON/OFF time, minimum is 1 sec
     int nextChurnTime = (int) distribution->getNext() + 1;
     scheduleChurn(node, type, nextChurnTime);
 }

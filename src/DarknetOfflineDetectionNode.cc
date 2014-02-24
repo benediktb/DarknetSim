@@ -22,11 +22,11 @@ void DarknetOfflineDetectionNode::initialize(int stage) {
     case 0:
         rcvack_waiting.clear();
         sigDropResendExeeded = registerSignal("sigDropResendExeeded");
-        break;
-    case 4:
         resendCounter = par("resendCounter");
         resendTimerMean = par("resendTimerMean");
         resendTimerVariance = par("resendTimerVariance");
+        break;
+    case 4:
         break;
     }
 }
@@ -57,7 +57,7 @@ bool DarknetOfflineDetectionNode::crashApp(IDoneCallback *doneCallback) {
  * initialize connection establishment by sending a DM_CON_SYN
  */
 void DarknetOfflineDetectionNode::connectPeer(std::string nodeID) {
-    DarknetMessage *dm = new DarknetMessage();
+    DarknetMessage *dm = new DarknetMessage("CON_SYN");
     dm->setType(DM_CON_SYN);
     dm->setTTL(defaultTTL);
     dm->setDestNodeID(nodeID.c_str());
@@ -69,7 +69,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg, Dar
     case DM_CON_SYN: {
         if(friendsByID.find(msg->getSrcNodeID()) != friendsByID.end()) {
             EV << "Received CON_SYN from: " << msg->getSrcNodeID() << endl;
-            DarknetMessage *ack = new DarknetMessage();
+            DarknetMessage *ack = new DarknetMessage("CON_ACK");
             ack->setType(DM_CON_ACK);
             ack->setTTL(defaultTTL);
             ack->setDestNodeID(msg->getSrcNodeID());

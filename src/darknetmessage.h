@@ -20,7 +20,7 @@ class DarknetMessage : public DarknetMessage_Base
      virtual DarknetMessage *dup() const {return new DarknetMessage(*this);}
      // ADD CODE HERE to redefine and implement pure virtual functions from DarknetMessage_Base
 
-     static std::string* typeToString(const DarknetMessageType t);
+     static std::string typeToString(const DarknetMessageType t);
      virtual std::string toString(bool contentOnly = false) const;
  };
 

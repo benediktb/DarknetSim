@@ -36,24 +36,23 @@ class DarknetChurnNode;
  * node per line):
  * <node ID>;<start state 0/1 == OFF/ON>;<comma-separated list of integer
  * ON/OFF durations>
- *
- * Note: cModule* == StandardHost*, parent of DarknetChurnNode* (usually, but
- * not necessarily, therefore a more common type is used here).
  */
 class ChurnController: public cSimpleModule {
 private:
     bool useChurn;
-
-    LifecycleController* lifecycleController;
     bool useTraces;
+
+    /** Maps nodeID to their respective trace */
     std::map<std::string, NodeTrace*> nodeTraces;
 
-    NodeTrace* getTrace(std::string nodeID);
-    int getNextTraceSwitchTime(NodeTrace* trace);
+    virtual std::vector<std::string>* readNodesFromTraceFile(std::ifstream& tracefile);
+    virtual void parseNodeLineFromTraceFile(std::map<std::string, NodeTrace*>& nodeTraces, std::string line);
+    virtual void parseTraceFile(std::string filename);
 
-    void doStartupWithTraces(DarknetChurnNode* node);
-    void initStart(cModule* parentModule);
-    void initShutdown(cModule* parentModule);
+    virtual NodeTrace* getTrace(std::string nodeID);
+    virtual int getNextTraceSwitchTime(NodeTrace* trace);
+
+    virtual void doStartupWithTraces(DarknetChurnNode* node);
 
 protected:
     virtual void initialize();
@@ -61,20 +60,12 @@ protected:
     virtual void handleMessage(cMessage *msg);
     virtual void handleChurnMessage(ChurnMessage* cmsg);
 
-    void initOperation(cModule* parentModule, NodeOperation* operation);
     virtual void scheduleChurn(DarknetChurnNode* node, ChurnMessageType type, IRandomDistribution* distribution);
     virtual void scheduleChurn(DarknetChurnNode* node, ChurnMessageType type, int time);
 
 public:
-    ChurnController(): cSimpleModule::cSimpleModule(), lifecycleController(new LifecycleController()), useTraces(false) {}
-    ~ChurnController() {
-        delete lifecycleController;
-    }
+    ChurnController(): cSimpleModule::cSimpleModule(), useTraces(false) {}
 
-    /**
-     * Used at initialization by DarknetChurnNode. Will crash when used by
-     * other node type (parameter "node" is casted to DarknetChurnNode*).
-     */
     virtual void doStartup(DarknetChurnNode* node);
 };
 

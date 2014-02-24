@@ -193,7 +193,10 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
 }
 
 void DarknetBaseNode::handleDarknetMessage(DarknetMessage *msg, DarknetPeer *sender) {
-    if (msg->getDestNodeID() != nodeID) { // message for another node -> forward it
+    if (msg->getType() == DM_OTHER) {
+        // Some other message, not interesting for this base class
+        handleIncomingMessage(msg, sender);
+    } else if (msg->getDestNodeID() != nodeID) { // message for another node -> forward it
         forwardMessage(msg, sender);
     } else if (forwardedIdTable.find(msg->getRequestMessageID())
             != forwardedIdTable.end()
@@ -216,6 +219,10 @@ void DarknetBaseNode::handleIncomingMessage(DarknetMessage *msg, DarknetPeer *se
     case DM_RESPONSE:
         emit(sigResponseRemainingTTL, msg->getTTL());
         outstandingResponses.erase(msg->getRequestMessageID());
+        delete msg;
+        break;
+    case DM_OTHER:
+        // ignore
         delete msg;
         break;
     default:

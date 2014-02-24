@@ -16,6 +16,8 @@ std::string DarknetMessage::typeToString(DarknetMessageType t) {
     switch (t) {
         case DM_UNKNOWN:
             return std::string("DM_UNKNOWN");
+        case DM_OTHER:
+            return std::string("DM_OTHER");
         case DM_REQUEST:
             return std::string("DM_REQUEST");
         case DM_RESPONSE:

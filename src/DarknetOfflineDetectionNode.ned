@@ -17,6 +17,7 @@ package darknetsim;
 
 simple DarknetOfflineDetectionNode extends DarknetSimpleNode {
     parameters:
+        @statistic[sigRetransmissionAfterTimeout](record=stats,vector?);
         @statistic[sigDropResendExeeded](record=stats,vector?);
         double resendTimerMean @unit(s) = default(0.5s);
         double resendTimerVariance = default(0.1); 

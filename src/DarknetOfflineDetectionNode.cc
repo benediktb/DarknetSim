@@ -22,6 +22,7 @@ void DarknetOfflineDetectionNode::initialize(int stage) {
     case 0:
         rcvack_waiting.clear();
         sigDropResendExeeded = registerSignal("sigDropResendExeeded");
+        sigRetransmissionAfterTimeout = registerSignal("sigRetransmissionAfterTimeout");
         resendCounter = par("resendCounter");
         resendTimerMean = par("resendTimerMean");
         resendTimerVariance = par("resendTimerVariance");
@@ -92,7 +93,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg, Dar
 void DarknetOfflineDetectionNode::addActivePeer(std::string nodeId) {
     if(connected.count(nodeId) == 0) {
         connected.insert(nodeId);
-        EV << "connection to " << nodeId << "established" << endl;
+        EV << "Connection to " << nodeId << " established" << endl;
     }
 }
 
@@ -116,15 +117,16 @@ void DarknetOfflineDetectionNode::handleRcvAck(DarknetMessage* msg) {
         DarknetMessage* msgPendingAck = rcvack_waiting.at(orig_mID).first;
         DarknetMessageType type = msgPendingAck->getType();
         long msgId = msgPendingAck->getId();
-        EV << "received RCVACK for message: " << type << " (id:" << msgId << ")" << endl;
-        cancelEvent(msgPendingAck);
+        EV << "Received RCVACK for message: " << type << " (id:" << msgId << ")" << endl;
+        cancelAndDelete(msgPendingAck);
         rcvack_waiting.erase(orig_mID);
     }
     delete msg;
 }
 
 void DarknetOfflineDetectionNode::sendRcvAck(DarknetMessage* msg) {
-    EV << "send RCVACK for message: " << msg->getType() << " (ID:" << msg->getId() << "/treeID: " << msg->getTreeId() << ")"  << endl;
+    EV << "Send RCVACK for message: " << msg->getType() << " (ID:" << msg->getId()
+            << "/treeID: " << msg->getTreeId() << ")"  << endl;
     DarknetMessage* ack = new DarknetMessage();
     ack->setDestNodeID(msg->getSrcNodeID());
     ack->setType(DM_RCVACK);
@@ -143,22 +145,26 @@ void DarknetOfflineDetectionNode::removeInactivePeer(std::string peerId) {
  */
 void DarknetOfflineDetectionNode::handleSelfMessage(cMessage* msg) {
     DarknetMessage* dm = dynamic_cast<DarknetMessage*>(msg);
-    if(dm != NULL and dm->hasPar("origMsgId") and rcvack_waiting.count(dm->par("origMsgId").longValue()) == 1) {
-        long msgID = dm->par("origMsgId").longValue();
+    if (dm != NULL and dm->hasPar("origMsgID") and rcvack_waiting.count(dm->par("origMsgID").longValue()) == 1) {
+        long msgID = dm->par("origMsgID").longValue();
+        std::pair<DarknetMessage*, int>* waiting = &rcvack_waiting[msgID];
 
-        if(rcvack_waiting[msgID].second < resendCounter) {
+        if (waiting->second < resendCounter) {
             int destPort = (int) dm->par("destPort").longValue();
             IPvXAddress* destAddr = (IPvXAddress*) (dm->par("destAddr").pointerValue());
             DarknetMessage* dup = dm->dup();
             DarknetSimpleNode::sendPacket(dup, *destAddr, destPort);
-            rcvack_waiting[msgID].second++;
-            dm->par("origMsgID").setLongValue(dup->getId());
-            rcvack_waiting.insert(std::make_pair(dup->getId(), rcvack_waiting[msgID]));
+            emit(sigRetransmissionAfterTimeout, dm->par("origMsgID").longValue());
+
+            waiting->second++;
+            waiting->first->par("origMsgID").setLongValue(dup->getId());
+            rcvack_waiting.insert(std::make_pair(dup->getId(), *waiting));
             rcvack_waiting.erase(msgID);
             scheduleAt(simTime() + normal(resendTimerMean,resendTimerVariance), dm);
-        } else { /* too many resends; delete resendTimer and remove peer from the connected list */
-            EV << "stop resendTimer for message: " << msg << " and remove the peer" << endl;
-            emit(sigDropResendExeeded,rcvack_waiting[msgID].first->getTTL());
+        } else {
+            /* too many resends; delete resendTimer and remove peer from the connected list */
+            EV << "Stop resendTimer for message: " << msg << " and remove the peer" << endl;
+            emit(sigDropResendExeeded, waiting->first->getTTL());
             removeInactivePeer(dm->getDestNodeID());
             rcvack_waiting.erase(msgID);
 
@@ -168,20 +174,28 @@ void DarknetOfflineDetectionNode::handleSelfMessage(cMessage* msg) {
 }
 
 void DarknetOfflineDetectionNode::sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr, int destPort) {
-    DarknetMessage* dup = pkg->dup();
-    std::stringstream nameStr;
-    nameStr << "Retransmission timeout of #" << pkg->getId();
-    dup->setName(nameStr.str().c_str());
-    dup->addPar("origMsgID");
-    dup->par("origMsgID").setLongValue(pkg->getId());
-    dup->addPar("destAddr");
-    dup->addPar("destPort");
-    dup->par("destAddr").setPointerValue(&destAddr);
-    dup->par("destPort").setLongValue(destPort);
-    EV << "start resend timer for message: (id:" << pkg->getId() << ", DestID: "<<pkg->getDestNodeID() << ")"  << endl;
-    rcvack_waiting.insert(std::make_pair(pkg->getId(), std::make_pair(dup, (int) 0)));
+    // No ACKs for ACKs ... therefore no retransmissions
+    if (pkg->getType() != DM_RCVACK) {
+        DarknetMessage* dup = pkg->dup();
 
-    scheduleAt(simTime() + normal(resendTimerMean, resendTimerVariance), dup);
+        std::stringstream nameStr;
+        nameStr << "Retransmission timeout of " << DarknetMessage::typeToString(pkg->getType())
+            <<" #" << pkg->getId();
+        dup->setName(nameStr.str().c_str());
+
+        dup->addPar("origMsgID");
+        dup->par("origMsgID").setLongValue(pkg->getId());
+        dup->addPar("destAddr");
+        dup->addPar("destPort");
+        dup->par("destAddr").setPointerValue(&destAddr);
+        dup->par("destPort").setLongValue(destPort);
+
+        EV << "Start retransmission timer for message: (id:" << pkg->getId()
+                << ", DestID: " << pkg->getDestNodeID() << ")" << endl;
+        rcvack_waiting.insert(std::make_pair(pkg->getId(), std::make_pair(dup, (int) 0)));
+
+        scheduleAt(simTime() + normal(resendTimerMean, resendTimerVariance), dup);
+    }
 
     DarknetSimpleNode::sendPacket(pkg, destAddr, destPort);
 }

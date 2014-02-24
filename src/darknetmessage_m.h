@@ -16,6 +16,7 @@
 // cplusplus {{
 enum DarknetMessageType {
     DM_UNKNOWN = 0,
+    DM_OTHER = 1,
     
     
     DM_REQUEST = 10,

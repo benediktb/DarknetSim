@@ -9,6 +9,7 @@
 
 class IRandomDistribution {
 public:
+    virtual ~IRandomDistribution() {}
     virtual double getNext() = 0;
 };
 

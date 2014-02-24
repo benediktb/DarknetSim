@@ -72,9 +72,12 @@ void DarknetChurnNode::sendToUDP(DarknetMessage *msg, int srcPort, const IPvXAdd
     }
 }
 
+void DarknetChurnNode::churnGoOnline() {
+    Enter_Method_Silent(); // possible context change from churnController
+    goOnline();
+}
 
 void DarknetChurnNode::goOnline() {
-    Enter_Method_Silent(); // possible context change from churnController
     cDisplayString& dispStr = getParentModule()->getDisplayString();
     dispStr.updateWith("i=device/pc2,green");
     emit(sigChurnOn, simTime() - lastSwitch);
@@ -89,8 +92,12 @@ void DarknetChurnNode::markAsOffline() {
     dispStr.updateWith("i=device/pc2,red");
 }
 
-void DarknetChurnNode::goOffline() {
+void DarknetChurnNode::churnGoOffline() {
     Enter_Method_Silent(); // possible context change from churnController
+    goOffline();
+}
+
+void DarknetChurnNode::goOffline() {
     DarknetOfflineDetectionNode::crashApp(NULL);
     markAsOffline();
     emit(sigChurnOff, simTime() - lastSwitch);

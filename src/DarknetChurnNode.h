@@ -67,7 +67,9 @@ protected:
 
     virtual std::vector<DarknetPeer*> findNextHop(DarknetMessage* msg);
 
+    void churnGoOnline();
     virtual void goOnline();
+    void churnGoOffline();
     virtual void goOffline();
 
 public:

@@ -193,7 +193,7 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
     }
 
     if (cmsg->getType() == CHURN_GO_ON) {
-        node->goOnline();
+        node->churnGoOnline();
 
         if (!useTraces) {
             scheduleChurn(node, CHURN_GO_OFF, node->onTimeDistribution);
@@ -201,7 +201,7 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
             scheduleChurn(node, CHURN_GO_OFF, nextSwitchTime);
         }
     } else {
-        node->goOffline();
+        node->churnGoOffline();
 
         if (!useTraces) {
             scheduleChurn(node, CHURN_GO_ON, node->offTimeDistribution);

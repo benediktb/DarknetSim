@@ -210,6 +210,7 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
         }
     }
 
+    pendingChurnMessages.erase(cmsg);
     delete cmsg;
 }
 
@@ -230,4 +231,5 @@ void ChurnController::scheduleChurn(DarknetChurnNode* node,
 
     EV << "Scheduling churn type " << ChurnMessageTypeToString(type) << " on node " << node->getNodeID() << " in " << time << endl;
     scheduleAt(simTime() + time, cmsg);
+    pendingChurnMessages.insert(cmsg);
 }

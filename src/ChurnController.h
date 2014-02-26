@@ -45,6 +45,8 @@ private:
     /** Maps nodeID to their respective trace */
     std::map<std::string, NodeTrace*> nodeTraces;
 
+    std::set<ChurnMessage*> pendingChurnMessages;
+
     virtual std::vector<std::string>* readNodesFromTraceFile(std::ifstream& tracefile);
     virtual void parseNodeLineFromTraceFile(std::map<std::string, NodeTrace*>& nodeTraces, std::string line);
     virtual void parseTraceFile(std::string filename);
@@ -65,6 +67,13 @@ protected:
 
 public:
     ChurnController(): cSimpleModule::cSimpleModule(), useTraces(false) {}
+
+    virtual ~ChurnController() {
+        std::set<ChurnMessage*>::iterator it;
+        for (it = pendingChurnMessages.begin(); it != pendingChurnMessages.end(); it++) {
+            cancelAndDelete(*it);
+        }
+    }
 
     virtual void doStartup(DarknetChurnNode* node);
 };

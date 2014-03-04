@@ -194,7 +194,10 @@ void DarknetOfflineDetectionNode::sendPacket(DarknetMessage* pkg, IPvXAddress& d
                 << ", DestID: " << pkg->getDestNodeID() << ")" << endl;
         rcvack_waiting.insert(std::make_pair(pkg->getId(), std::make_pair(dup, (int) 0)));
 
-        scheduleAt(simTime() + normal(resendTimerMean, resendTimerVariance), dup);
+        // Minimum reschedule time 10ms
+        double rescheduleTime = std::max(normal(resendTimerMean, resendTimerVariance), 0.01);
+
+        scheduleAt(simTime() + rescheduleTime, dup);
     }
 
     DarknetSimpleNode::sendPacket(pkg, destAddr, destPort);

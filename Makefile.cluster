@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for DarknetSim-Patrick
 #
 # This file was generated with the command:
-#  opp_makemake -d src -L../inet-2.2.0/out/gcc-debug/src/ -I../inet-2.2.0/src/ -linet -f -u Cmdenv --deep -O out -X. -DINET_IMPORT -KINET_2_2_0_PROJ=../inet-2.2.0
+#  opp_makemake -d src -L../inet-2.2.0/out/$(CONFIGNAME)/src/ -I../inet-2.2.0/src/ -linet -f -u Cmdenv --deep -O out -X. -DINET_IMPORT -KINET_2_2_0_PROJ=../inet-2.2.0
 #
 
 # Name of target to be created (-o option)
@@ -17,8 +17,8 @@ USERIF_LIBS = $(CMDENV_LIBS)
 EXTRA_OBJS =
 
 # Additional libraries (-L, -l options)
-LIBS = -L../inet-2.2.0/out/gcc-debug/src/  -linet
-LIBS += -Wl,-rpath,`abspath ../inet-2.2.0/out/gcc-debug/src/`
+LIBS = -L../inet-2.2.0/out/$(CONFIGNAME)/src/  -linet
+LIBS += -Wl,-rpath,`abspath ../inet-2.2.0/out/$(CONFIGNAME)/src/`
 
 # Output directory
 PROJECT_OUTPUT_DIR = out

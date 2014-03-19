@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for libDarknetSim-Patrick
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep --make-so -O out -I../../inet-2.2.0/src/linklayer/ieee80211/mac -I../../inet-2.2.0/src/transport/contract -I../../inet-2.2.0/src/mobility -I../../inet-2.2.0/src/linklayer/radio/propagation -I../../inet-2.2.0/src/applications/pingapp -I../../inet-2.2.0/src/world/obstacles -I../../inet-2.2.0/src -I../../inet-2.2.0/src/linklayer/common -I../../inet-2.2.0/src/networklayer/ipv6tunneling -I../../inet-2.2.0/src/networklayer/ipv4 -I../../inet-2.2.0/src/networklayer/xmipv6 -I../../inet-2.2.0/src/linklayer/ieee80211/mgmt -I../../inet-2.2.0/src/util/headerserializers/ipv4 -I../../inet-2.2.0/src/util/headerserializers/udp -I../../inet-2.2.0/src/base -I../../inet-2.2.0/src/util/headerserializers -I../../inet-2.2.0/src/applications -I../../inet-2.2.0/src/status -I../../inet-2.2.0/src/networklayer/ipv6 -I../../inet-2.2.0/src/networklayer/icmpv6 -I../../inet-2.2.0/src/util -I../../inet-2.2.0/src/battery/models -I../../inet-2.2.0/src/world/radio -I../../inet-2.2.0/src/transport/tcp_common -I../../inet-2.2.0/src/linklayer/contract -I../../inet-2.2.0/src/networklayer/common -I../../inet-2.2.0/src/linklayer/ieee80211/radio/errormodel -I../../inet-2.2.0/src/util/headerserializers/sctp -I../../inet-2.2.0/src/transport/sctp -I../../inet-2.2.0/src/linklayer/ieee80211/radio -I../../inet-2.2.0/src/util/headerserializers/tcp -I../../inet-2.2.0/src/networklayer/contract -I../../inet-2.2.0/src/networklayer/manetrouting/base -I../../inet-2.2.0/src/linklayer/radio -I../../inet-2.2.0/src/networklayer/autorouting/ipv4 -I../../inet-2.2.0/src/linklayer/ethernet -I../../inet-2.2.0/src/networklayer/arp -I../../inet-2.2.0/src/transport/udp -L../../inet-2.2.0/out/gcc-debug/src -linet -DINET_IMPORT -KINET_2_2_0_PROJ=../../inet-2.2.0
+#  opp_makemake -f --deep --make-so -O out -I../../inet-2.2.0/src/linklayer/ieee80211/mac -I../../inet-2.2.0/src/transport/contract -I../../inet-2.2.0/src/mobility -I../../inet-2.2.0/src/linklayer/radio/propagation -I../../inet-2.2.0/src/applications/pingapp -I../../inet-2.2.0/src/world/obstacles -I../../inet-2.2.0/src -I../../inet-2.2.0/src/linklayer/common -I../../inet-2.2.0/src/networklayer/ipv6tunneling -I../../inet-2.2.0/src/networklayer/ipv4 -I../../inet-2.2.0/src/networklayer/xmipv6 -I../../inet-2.2.0/src/linklayer/ieee80211/mgmt -I../../inet-2.2.0/src/util/headerserializers/ipv4 -I../../inet-2.2.0/src/util/headerserializers/udp -I../../inet-2.2.0/src/base -I../../inet-2.2.0/src/util/headerserializers -I../../inet-2.2.0/src/applications -I../../inet-2.2.0/src/status -I../../inet-2.2.0/src/networklayer/ipv6 -I../../inet-2.2.0/src/networklayer/icmpv6 -I../../inet-2.2.0/src/util -I../../inet-2.2.0/src/battery/models -I../../inet-2.2.0/src/world/radio -I../../inet-2.2.0/src/transport/tcp_common -I../../inet-2.2.0/src/linklayer/contract -I../../inet-2.2.0/src/networklayer/common -I../../inet-2.2.0/src/linklayer/ieee80211/radio/errormodel -I../../inet-2.2.0/src/util/headerserializers/sctp -I../../inet-2.2.0/src/transport/sctp -I../../inet-2.2.0/src/linklayer/ieee80211/radio -I../../inet-2.2.0/src/util/headerserializers/tcp -I../../inet-2.2.0/src/networklayer/contract -I../../inet-2.2.0/src/networklayer/manetrouting/base -I../../inet-2.2.0/src/linklayer/radio -I../../inet-2.2.0/src/networklayer/autorouting/ipv4 -I../../inet-2.2.0/src/linklayer/ethernet -I../../inet-2.2.0/src/networklayer/arp -I../../inet-2.2.0/src/transport/udp -L../../inet-2.2.0/out/$(CONFIGNAME)/src -linet -DINET_IMPORT -KINET_2_2_0_PROJ=../../inet-2.2.0
 #
 
 # Name of target to be created (-o option)
@@ -55,8 +55,8 @@ INCLUDE_PATH = \
 EXTRA_OBJS =
 
 # Additional libraries (-L, -l options)
-LIBS = -L../../inet-2.2.0/out/gcc-debug/src  -linet
-LIBS += -Wl,-rpath,`abspath ../../inet-2.2.0/out/gcc-debug/src`
+LIBS = -L../../inet-2.2.0/out/$(CONFIGNAME)/src  -linet
+LIBS += -Wl,-rpath,`abspath ../../inet-2.2.0/out/$(CONFIGNAME)/src`
 
 # Output directory
 PROJECT_OUTPUT_DIR = ../out
@@ -202,16 +202,20 @@ $O/DarknetBaseNode.o: DarknetBaseNode.cc \
   ../../inet-2.2.0/src/networklayer/contract/IPv4Address.h \
   ../../inet-2.2.0/src/base/ILifecycle.h \
   ../../inet-2.2.0/src/applications/AppBase.h \
+  ../../inet-2.2.0/src/base/INotifiable.h \
   ../../inet-2.2.0/src/base/INETDefs.h \
   ../../inet-2.2.0/src/transport/contract/UDPControlInfo.h \
   ../../inet-2.2.0/src/transport/udp/UDPPacket.h \
+  ../../inet-2.2.0/src/networklayer/ipv4/IPv4Route.h \
   ../../inet-2.2.0/src/networklayer/contract/IPvXAddressResolver.h \
   ../../inet-2.2.0/src/networklayer/contract/IPv6Address.h \
   ../../inet-2.2.0/src/status/NodeStatus.h \
   ../../inet-2.2.0/src/networklayer/contract/IPvXAddress.h \
   ./DarknetBaseNode.h \
   ./darknetmessage.h \
+  ../../inet-2.2.0/src/networklayer/ipv4/IRoutingTable.h \
   ../../inet-2.2.0/src/transport/contract/UDPControlInfo_m.h \
+  ../../inet-2.2.0/src/networklayer/ipv4/RoutingTable.h \
   ../../inet-2.2.0/src/transport/contract/UDPSocket.h \
   ./darknetmessage_m.h \
   ../../inet-2.2.0/src/transport/udp/UDPPacket_m.h

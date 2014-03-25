@@ -11,7 +11,9 @@ class LognormalDistribution: public IRandomDistribution {
 protected:
     double mean, variance;
 public:
-    LognormalDistribution(double mean, double variance): mean(mean), variance(variance) {}
+    LognormalDistribution(double mean, double variance) :
+            mean(mean), variance(variance) {
+    }
 
     virtual double getNext();
 };

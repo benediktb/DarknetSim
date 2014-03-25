@@ -20,28 +20,30 @@ void DarknetSimpleNode::initialize(int stage) {
     DarknetBaseNode::initialize(stage);
 
     if (stage == 6) {
-        std::vector<std::string> v = cStringTokenizer(par("requestTargets")).asVector();
+        std::vector<std::string> v =
+                cStringTokenizer(par("requestTargets")).asVector();
         double requestIntervalMean = par("requestIntervalMean");
         double requestIntervalVariance = par("requestIntervalVariance");
         simtime_t sendAt = simTime();
-        for(std::vector<std::string>::iterator iter = v.begin(); iter != v.end(); iter++) {
+        for (std::vector<std::string>::iterator iter = v.begin();
+                iter != v.end(); iter++) {
             cMessage *timer = new PingTimer((*iter));
-            sendAt += normal(requestIntervalMean,requestIntervalVariance);
+            sendAt += normal(requestIntervalMean, requestIntervalVariance);
             scheduleAt(sendAt, timer);
         }
     }
 }
 
 void DarknetSimpleNode::connectPeer(std::string nodeID) {
-    if(connected.count(nodeID) == 0) {
+    if (connected.count(nodeID) == 0) {
         connected.insert(nodeID);
     }
-};
-
+}
+;
 
 void DarknetSimpleNode::handleSelfMessage(cMessage *msg) {
-    if(dynamic_cast<PingTimer*>(msg) != NULL) {
-        EV << "sending PING to: " << msg->getName();
+    if (dynamic_cast<PingTimer*>(msg) != NULL) {
+        EV<< "sending PING to: " << msg->getName();
         sendMessage(makeRequest(msg->getName()));
         delete msg;
     }

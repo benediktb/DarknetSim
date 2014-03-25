@@ -20,13 +20,21 @@
 
 class PingTimer: public cMessage {
 public:
-    PingTimer(std::string name) : cMessage(name.c_str()) {};
+    PingTimer(std::string name) :
+            cMessage(name.c_str()) {
+    }
+    ;
 };
 
 class DarknetSimpleNode: public DarknetBaseNode {
 public:
-    DarknetSimpleNode() : DarknetBaseNode::DarknetBaseNode() {};
-    virtual ~DarknetSimpleNode() {};
+    DarknetSimpleNode() :
+            DarknetBaseNode::DarknetBaseNode() {
+    }
+    ;
+    virtual ~DarknetSimpleNode() {
+    }
+    ;
 protected:
     virtual void initialize(int stage);
     virtual void handleSelfMessage(cMessage* msg);

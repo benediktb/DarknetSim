@@ -47,8 +47,10 @@ private:
 
     std::set<ChurnMessage*> pendingChurnMessages;
 
-    virtual std::vector<std::string>* readNodesFromTraceFile(std::ifstream& tracefile);
-    virtual void parseNodeLineFromTraceFile(std::map<std::string, NodeTrace*>& nodeTraces, std::string line);
+    virtual std::vector<std::string>* readNodesFromTraceFile(
+            std::ifstream& tracefile);
+    virtual void parseNodeLineFromTraceFile(
+            std::map<std::string, NodeTrace*>& nodeTraces, std::string line);
     virtual void parseTraceFile(std::string filename);
 
     virtual NodeTrace* getTrace(std::string nodeID);
@@ -62,15 +64,20 @@ protected:
     virtual void handleMessage(cMessage *msg);
     virtual void handleChurnMessage(ChurnMessage* cmsg);
 
-    virtual void scheduleChurn(DarknetChurnNode* node, ChurnMessageType type, IRandomDistribution* distribution);
-    virtual void scheduleChurn(DarknetChurnNode* node, ChurnMessageType type, int time);
+    virtual void scheduleChurn(DarknetChurnNode* node, ChurnMessageType type,
+            IRandomDistribution* distribution);
+    virtual void scheduleChurn(DarknetChurnNode* node, ChurnMessageType type,
+            int time);
 
 public:
-    ChurnController(): cSimpleModule::cSimpleModule(), useTraces(false) {}
+    ChurnController() :
+            cSimpleModule::cSimpleModule(), useTraces(false) {
+    }
 
     virtual ~ChurnController() {
         std::set<ChurnMessage*>::iterator it;
-        for (it = pendingChurnMessages.begin(); it != pendingChurnMessages.end(); it++) {
+        for (it = pendingChurnMessages.begin();
+                it != pendingChurnMessages.end(); it++) {
             cancelAndDelete(*it);
         }
     }

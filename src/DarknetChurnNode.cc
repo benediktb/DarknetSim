@@ -17,7 +17,8 @@
 #include "RandomDistributionFactory.h"
 #include <csimulation.h>
 
-Define_Module(DarknetChurnNode);
+Define_Module(DarknetChurnNode)
+;
 
 void DarknetChurnNode::initialize(int stage) {
     DarknetOfflineDetectionNode::initialize(stage);
@@ -29,22 +30,26 @@ void DarknetChurnNode::initialize(int stage) {
 
         startState = par("startState").boolValue();
 
-        churnController = dynamic_cast<ChurnController *>(simulation.getModuleByPath("churnController"));
+        churnController =
+                dynamic_cast<ChurnController *>(simulation.getModuleByPath("churnController"));
 
         if (churnController == NULL) {
-            error("Could not find ChurnController. Is there one in the network (with name 'churnController')?");
+            error(
+                    "Could not find ChurnController. Is there one in the network (with name 'churnController')?");
         }
 
         // Setup online time distribution
         std::string onDist = par("onTimeDistribution").stringValue();
-        onTimeDistribution = RandomDistributionFactory::getDistribution(onDist, this, "onTime");
+        onTimeDistribution = RandomDistributionFactory::getDistribution(onDist,
+                this, "onTime");
         if (onTimeDistribution == NULL) {
             error(("Unknown random distribution: " + onDist).c_str());
         }
 
         // Setup offline time distribution
         std::string offDist = par("offTimeDistribution").stringValue();
-        offTimeDistribution = RandomDistributionFactory::getDistribution(offDist, this, "offTime");
+        offTimeDistribution = RandomDistributionFactory::getDistribution(
+                offDist, this, "offTime");
         if (offTimeDistribution == NULL) {
             error(("Unknown random distribution: " + offDist).c_str());
         }
@@ -64,16 +69,19 @@ void DarknetChurnNode::handleUDPMessage(cMessage* msg) {
     }
 }
 
-void DarknetChurnNode::sendToUDP(DarknetMessage *msg, int srcPort, const IPvXAddress& destAddr, int destPort) {
+void DarknetChurnNode::sendToUDP(DarknetMessage *msg, int srcPort,
+        const IPvXAddress& destAddr, int destPort) {
     if (isOnline) {
-        DarknetOfflineDetectionNode::sendToUDP(msg, srcPort, destAddr, destPort);
+        DarknetOfflineDetectionNode::sendToUDP(msg, srcPort, destAddr,
+                destPort);
     } else {
         error("Tried to send UDP packet while offline.");
     }
 }
 
 void DarknetChurnNode::churnGoOnline() {
-    Enter_Method_Silent(); // possible context change from churnController
+    Enter_Method_Silent
+    (); // possible context change from churnController
     goOnline();
 }
 
@@ -93,7 +101,8 @@ void DarknetChurnNode::markAsOffline() {
 }
 
 void DarknetChurnNode::churnGoOffline() {
-    Enter_Method_Silent(); // possible context change from churnController
+    Enter_Method_Silent
+    (); // possible context change from churnController
     goOffline();
 }
 
@@ -133,7 +142,8 @@ std::vector<DarknetPeer*> DarknetChurnNode::findNextHop(DarknetMessage* msg) {
     int nextHopIndex = uniform(0, 1) * connected.size();
     std::vector<DarknetPeer*> list;
     int i = 0;
-    for(std::set<std::string>::iterator it = connected.begin(); it != connected.end(); it++) {
+    for (std::set<std::string>::iterator it = connected.begin();
+            it != connected.end(); it++) {
         if (i == nextHopIndex) {
             list.push_back(friendsByID[*it]);
             break;

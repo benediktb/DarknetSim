@@ -16,10 +16,11 @@
 #include "FloodingNode.h"
 #include <algorithm>
 
-Define_Module(FloodingNode);
+Define_Module(FloodingNode)
+;
 
 void FloodingNode::initialize(int stage) {
-    if(stage == 0) {
+    if (stage == 0) {
         sigDropAlreadySeen = registerSignal("sigDropAlreadySeen");
     }
     DarknetSimpleNode::initialize(stage);
@@ -28,22 +29,24 @@ void FloodingNode::initialize(int stage) {
 std::vector<DarknetPeer*> FloodingNode::findNextHop(DarknetMessage* msg) {
     //TODO: could be improved
     std::vector<DarknetPeer*> list;
-    for(std::set<std::string>::iterator it = connected.begin(); it != connected.end(); it++) {
+    for (std::set<std::string>::iterator it = connected.begin();
+            it != connected.end(); it++) {
         list.push_back(friendsByID[*it]);
     }
-    EV <<  nodeID << ": findNextHop size: " << list.size();
+    EV<< nodeID << ": findNextHop size: " << list.size();
     return list;
 }
 
 /*
  * check whether we we have seen msg earlier respectively a duplicate of it
  */
-void FloodingNode::handleDarknetMessage(DarknetMessage* msg, DarknetPeer *sender) {
-    if(seenMessages.count(msg->getTreeId()) == 0) { //already seen?
+void FloodingNode::handleDarknetMessage(DarknetMessage* msg,
+        DarknetPeer *sender) {
+    if (seenMessages.count(msg->getTreeId()) == 0) { //already seen?
         seenMessages.insert(msg->getTreeId());
         DarknetSimpleNode::handleDarknetMessage(msg, sender);
-    }else {
-        emit(sigDropAlreadySeen,msg->getTreeId());
+    } else {
+        emit(sigDropAlreadySeen, msg->getTreeId());
         delete msg;
     }
 }
@@ -52,7 +55,8 @@ void FloodingNode::handleDarknetMessage(DarknetMessage* msg, DarknetPeer *sender
  * add TreeID of msg to list of seen messages to prevent dealing again with them if receiving nodes send them back
  */
 bool FloodingNode::sendMessage(DarknetMessage* msg) {
-    if(std::find(seenMessages.begin(),seenMessages.end(),msg->getTreeId()) != seenMessages.end()) { //already seen?
+    if (std::find(seenMessages.begin(), seenMessages.end(), msg->getTreeId())
+            != seenMessages.end()) { //already seen?
         seenMessages.insert(msg->getTreeId()); // prevent dealing with messages we self sent
     }
     return DarknetSimpleNode::sendMessage(msg);

@@ -11,7 +11,9 @@ class PoissonDistribution: public IRandomDistribution {
 protected:
     double lambda;
 public:
-    PoissonDistribution(double lambda): lambda(lambda) {}
+    PoissonDistribution(double lambda) :
+            lambda(lambda) {
+    }
 
     virtual double getNext();
 };

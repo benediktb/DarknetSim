@@ -42,7 +42,6 @@ bool DarknetBaseNode::crashApp(IDoneCallback *doneCallback) {
     return true;
 }
 
-
 void DarknetBaseNode::addPeer(std::string nodeID, IPvXAddress& destAddr,
         int destPort) {
     DarknetPeer* peer = new DarknetPeer;
@@ -50,7 +49,8 @@ void DarknetBaseNode::addPeer(std::string nodeID, IPvXAddress& destAddr,
     peer->nodeID = nodeID;
     peer->address = *address;
     friendsByID.insert(std::pair<std::string, DarknetPeer*>(nodeID, peer));
-    friendsByAddress.insert(std::pair<IPvXAddress, DarknetPeer*>(destAddr, peer));
+    friendsByAddress.insert(
+            std::pair<IPvXAddress, DarknetPeer*>(destAddr, peer));
 }
 
 void DarknetBaseNode::initialize(int stage) {
@@ -90,21 +90,22 @@ void DarknetBaseNode::initialize(int stage) {
             }
         }}
 
-        break;
-    }
+    break;
+}
 
-    AppBase::initialize(stage);
+AppBase::initialize(stage);
 }
 
 void DarknetBaseNode::connectAllFriends() {
-    for(std::map<std::string, DarknetPeer*>::iterator iter = friendsByID.begin(); iter != friendsByID.end(); iter++) {
+    for (std::map<std::string, DarknetPeer*>::iterator iter =
+            friendsByID.begin(); iter != friendsByID.end(); iter++) {
         connectPeer(iter->second->nodeID);
     }
 }
 
 void DarknetBaseNode::sendToUDP(DarknetMessage *msg, int srcPort,
         const IPvXAddress& destAddr, int destPort) {
-    EV << "Sending UDP packet: " << getLocalIPv4Address() << " to ";
+    EV<< "Sending UDP packet: " << getLocalIPv4Address() << " to ";
     EV << destAddr << ":" << destPort << ", content: ";
     EV << msg->toString() << " (" << msg->getByteLength() << " bytes)" << endl;
 
@@ -139,7 +140,8 @@ bool DarknetBaseNode::sendMessage(DarknetMessage* msg) {
         msg->setSrcNodeID(nodeID.c_str());
         for (std::vector<DarknetPeer*>::iterator iter = destPeers.begin();
                 iter != destPeers.end(); iter++) {
-            sendPacket(msg->dup(), (*iter)->address.first, (*iter)->address.second);
+            sendPacket(msg->dup(), (*iter)->address.first,
+                    (*iter)->address.second);
         }
         delete msg;
         return true;
@@ -151,14 +153,16 @@ bool DarknetBaseNode::sendMessage(DarknetMessage* msg) {
     }
 }
 
-/**
- * Gets the first, non-loopback IPv4 address assigned to this host.
- */
+        /**
+         * Gets the first, non-loopback IPv4 address assigned to this host.
+         */
 IPv4Address DarknetBaseNode::getLocalIPv4Address() {
-    RoutingTable* rt = (RoutingTable*) IPvXAddressResolver().routingTableOf(this->getParentModule());
+    RoutingTable* rt = (RoutingTable*) IPvXAddressResolver().routingTableOf(
+            this->getParentModule());
     std::vector<IPv4Address> addresses = rt->gatherAddresses();
 
-    for (std::vector<IPv4Address>::iterator it = addresses.begin(); it != addresses.end(); it++) {
+    for (std::vector<IPv4Address>::iterator it = addresses.begin();
+            it != addresses.end(); it++) {
         if (!it->equals(IPv4Address::LOOPBACK_ADDRESS))
             return *it;
     }
@@ -174,7 +178,7 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
         typedef std::map<IPvXAddress, DarknetPeer*>::iterator it_type;
         it_type it = friendsByAddress.find(udi->getSrcAddr());
         if (friendsByAddress.end() == it) {
-            EV << "Could not get sending peer for message: " << msg << endl;
+            EV<< "Could not get sending peer for message: " << msg << endl;
             EV << "  + Source address: " << udi->getSrcAddr().str() << ":" << udi->getSrcPort() << endl;
             EV << "  + Content of address -> peer map: " << endl;
             for(it_type iterator = friendsByAddress.begin(); iterator != friendsByAddress.end(); iterator++) {
@@ -184,7 +188,7 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
             return;
         }
         DarknetPeer* sender = it->second;
-        EV << "Received DarknetMessage at " << getLocalIPv4Address() << " from " << sender->address.first << ", peer " << sender->nodeID << endl;
+        EV<< "Received DarknetMessage at " << getLocalIPv4Address() << " from " << sender->address.first << ", peer " << sender->nodeID << endl;
         handleDarknetMessage(dm, sender);
     } else {
         EV<< "received an unknown cMessage: " << msg << endl;
@@ -192,7 +196,8 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
     }
 }
 
-void DarknetBaseNode::handleDarknetMessage(DarknetMessage *msg, DarknetPeer *sender) {
+void DarknetBaseNode::handleDarknetMessage(DarknetMessage *msg,
+        DarknetPeer *sender) {
     if (msg->getType() == DM_OTHER) {
         // Some other message, not interesting for this base class
         handleIncomingMessage(msg, sender);
@@ -210,7 +215,8 @@ void DarknetBaseNode::handleDarknetMessage(DarknetMessage *msg, DarknetPeer *sen
     }
 }
 
-void DarknetBaseNode::handleIncomingMessage(DarknetMessage *msg, DarknetPeer *sender) {
+void DarknetBaseNode::handleIncomingMessage(DarknetMessage *msg,
+        DarknetPeer *sender) {
     switch (msg->getType()) {
     case DM_REQUEST:
         emit(sigRequestRemainingTTL, msg->getTTL());
@@ -252,30 +258,33 @@ void DarknetBaseNode::forwardMessage(DarknetMessage* msg, DarknetPeer *sender) {
     }
 }
 
-/*
- * forward a Response to a previously forwarded Message back its path "up"
- */
+        /*
+         * forward a Response to a previously forwarded Message back its path "up"
+         */
 void DarknetBaseNode::forwardResponse(DarknetMessage* msg) {
     msg->setDestNodeID(forwardedIdTable.at(msg->getRequestMessageID()).c_str());
     forwardedIdTable.erase(msg->getRequestMessageID());
     sendMessage(msg);
 }
 
-void DarknetBaseNode::makeResponse(DarknetMessage *msg, DarknetMessage *request) {
+void DarknetBaseNode::makeResponse(DarknetMessage *msg,
+        DarknetMessage *request) {
     msg->setType(DM_RESPONSE);
     msg->setTTL(defaultTTL);
     msg->setRequestMessageID(request->getTreeId());
     msg->setDestNodeID(request->getSrcNodeID());
 }
 
-void DarknetBaseNode::handleRequest(DarknetMessage* request, DarknetPeer *sender) {
+void DarknetBaseNode::handleRequest(DarknetMessage* request,
+        DarknetPeer *sender) {
     DarknetMessage *msg = new DarknetMessage();
     makeResponse(msg, request);
     delete request;
     sendMessage(msg);
 }
 
-DarknetMessage* DarknetBaseNode::makeRequest(DarknetMessage *msg, std::string nodeID) {
+DarknetMessage* DarknetBaseNode::makeRequest(DarknetMessage *msg,
+        std::string nodeID) {
     msg->setDestNodeID(nodeID.c_str());
     msg->setType(DM_REQUEST);
     msg->setTTL(defaultTTL);
@@ -294,7 +303,7 @@ void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {
     } else if (msg->getKind() == UDP_I_DATA) {
         handleUDPMessage(msg);
     } else if (msg->getKind() == UDP_I_ERROR) {
-        EV << "Ignoring UDP error report" << endl;
+        EV<< "Ignoring UDP error report" << endl;
         delete msg;
     }
     else {

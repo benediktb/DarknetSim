@@ -16,10 +16,11 @@
 //#include <IPAddressResolver.h>
 #include "RandomwalkNode.h"
 
-Define_Module(RandomwalkNode);
+Define_Module(RandomwalkNode)
+;
 
 void RandomwalkNode::initialize(int stage) {
-    if(stage == 0) {
+    if (stage == 0) {
         requestFanout = par("requestFanout");
     }
 //    DarknetOfflineDetectionNode::initialize(stage);
@@ -27,26 +28,26 @@ void RandomwalkNode::initialize(int stage) {
 }
 
 std::vector<DarknetPeer*> RandomwalkNode::findNextHop(DarknetMessage* msg) {
-    if(!connected.size()) { // peer list empty -> raise exception?
-        EV << "ERROR: empty peer list!";
+    if (!connected.size()) { // peer list empty -> raise exception?
+        EV<< "ERROR: empty peer list!";
         return std::vector<DarknetPeer*>(0);
     }
     if(connected.count(msg->getDestNodeID()) == 1 and friendsByID.count(msg->getDestNodeID()) == 1) {
         return std::vector<DarknetPeer*>(1,friendsByID[msg->getDestNodeID()]);
-    }else {
+    } else {
         std::set<std::string>::iterator iter = connected.begin();
         std::advance(iter, dblrand() * connected.size());
         return std::vector<DarknetPeer*>(1,friendsByID[*iter]);
     }
 }
 
-/*
- * send <requestFanout> requests at once, each can travel a different path (since all have different treeIDs)
- * save the timers ID in RequestMessageID, so only the first request will be answered
- */
+        /*
+         * send <requestFanout> requests at once, each can travel a different path (since all have different treeIDs)
+         * save the timers ID in RequestMessageID, so only the first request will be answered
+         */
 void RandomwalkNode::handleSelfMessage(cMessage *msg) {
-    if(dynamic_cast<PingTimer*>(msg) != NULL) {
-        EV << "sending PING to: " << msg->getName();
+    if (dynamic_cast<PingTimer*>(msg) != NULL) {
+        EV<< "sending PING to: " << msg->getName();
         DarknetMessage* m;
         for(int i=0; i< requestFanout; i++) {
             m = makeRequest(msg->getName());
@@ -55,14 +56,14 @@ void RandomwalkNode::handleSelfMessage(cMessage *msg) {
         }
         delete msg;
 //    }else DarknetOfflineDetectionNode::handleSelfMessage(msg);
-    }else DarknetSimpleNode::handleSelfMessage(msg);
+    } else DarknetSimpleNode::handleSelfMessage(msg);
 }
 
-/*
- * only respond to the first request with the same RequestMessageID
- */
+        /*
+         * only respond to the first request with the same RequestMessageID
+         */
 void RandomwalkNode::handleRequest(DarknetMessage* request) {
-    if(answeredRequests.count(request->getRequestMessageID()) == 0) {
+    if (answeredRequests.count(request->getRequestMessageID()) == 0) {
         answeredRequests.insert(request->getRequestMessageID());
         DarknetMessage *msg = new DarknetMessage();
         msg->setDestNodeID(request->getSrcNodeID());
@@ -71,6 +72,6 @@ void RandomwalkNode::handleRequest(DarknetMessage* request) {
         msg->setRequestMessageID(request->getTreeId());
         delete request;
         sendMessage(msg);
-    }
-    else delete request;
+    } else
+        delete request;
 }

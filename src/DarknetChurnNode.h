@@ -53,7 +53,8 @@ protected:
     /** Distribution for offline time (time till next online time) */
     IRandomDistribution* offTimeDistribution;
 
-    virtual void sendToUDP(DarknetMessage *msg, int srcPort, const IPvXAddress& destAddr, int destPort);
+    virtual void sendToUDP(DarknetMessage *msg, int srcPort,
+            const IPvXAddress& destAddr, int destPort);
     virtual void handleUDPMessage(cMessage* msg);
 
     virtual void markAsOffline();
@@ -73,12 +74,17 @@ protected:
     virtual void goOffline();
 
 public:
-    DarknetChurnNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode(), isOnline(false), lastSwitch(0) {};
+    DarknetChurnNode() :
+            DarknetOfflineDetectionNode::DarknetOfflineDetectionNode(), isOnline(
+                    false), lastSwitch(0) {
+    }
+    ;
 
     virtual ~DarknetChurnNode() {
         delete onTimeDistribution;
         delete offTimeDistribution;
-    };
+    }
+    ;
 
 };
 

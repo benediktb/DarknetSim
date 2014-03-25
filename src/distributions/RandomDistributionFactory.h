@@ -9,7 +9,8 @@
 
 class RandomDistributionFactory {
 public:
-    static IRandomDistribution* getDistribution(std::string distributionName, cModule* module, std::string parPrefix);
+    static IRandomDistribution* getDistribution(std::string distributionName,
+            cModule* module, std::string parPrefix);
 };
 
 #endif /* RANDOMDISTRIBUTIONFACTORY_H_ */

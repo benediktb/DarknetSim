@@ -20,8 +20,13 @@
 
 class FloodingNode: public DarknetSimpleNode {
 public:
-    FloodingNode() : DarknetSimpleNode::DarknetSimpleNode() {};
-    virtual ~FloodingNode() {};
+    FloodingNode() :
+            DarknetSimpleNode::DarknetSimpleNode() {
+    }
+    ;
+    virtual ~FloodingNode() {
+    }
+    ;
 protected:
     std::set<long> seenMessages;
     simsignal_t sigDropAlreadySeen;

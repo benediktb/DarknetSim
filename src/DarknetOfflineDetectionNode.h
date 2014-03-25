@@ -20,8 +20,15 @@
 
 class DarknetOfflineDetectionNode: public DarknetSimpleNode {
 public:
-    DarknetOfflineDetectionNode() : DarknetSimpleNode::DarknetSimpleNode(), resendTimerMean(0), resendTimerVariance(0), resendCounter(0), rcvack_waiting() {};
-    virtual ~DarknetOfflineDetectionNode() { cancelAllRetransmissions(); };
+    DarknetOfflineDetectionNode() :
+            DarknetSimpleNode::DarknetSimpleNode(), resendTimerMean(0), resendTimerVariance(
+                    0), resendCounter(0), rcvack_waiting() {
+    }
+    ;
+    virtual ~DarknetOfflineDetectionNode() {
+        cancelAllRetransmissions();
+    }
+    ;
 
 protected:
     double resendTimerMean;
@@ -37,9 +44,11 @@ protected:
     virtual void handleRcvAck(DarknetMessage* msg);
     virtual void sendRcvAck(DarknetMessage* msg);
     virtual void connectPeer(std::string nodeID);
-    virtual void handleIncomingMessage(DarknetMessage* msg, DarknetPeer *sender);
+    virtual void handleIncomingMessage(DarknetMessage* msg,
+            DarknetPeer *sender);
     virtual void handleSelfMessage(cMessage* msg);
-    virtual void sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr, int destPort);
+    virtual void sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr,
+            int destPort);
 
     virtual bool startApp(IDoneCallback *doneCallback);
     virtual bool stopApp(IDoneCallback *doneCallback);

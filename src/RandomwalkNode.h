@@ -23,16 +23,21 @@
 class RandomwalkNode: public DarknetSimpleNode {
 public:
 //    RandomwalkNode() : DarknetOfflineDetectionNode::DarknetOfflineDetectionNode() {};
-    RandomwalkNode() : DarknetSimpleNode::DarknetSimpleNode() {};
-   virtual ~RandomwalkNode() {};
+    RandomwalkNode() :
+            DarknetSimpleNode::DarknetSimpleNode() {
+    }
+    ;
+    virtual ~RandomwalkNode() {
+    }
+    ;
 protected:
-   int requestFanout;
-   std::set<long> answeredRequests;
+    int requestFanout;
+    std::set<long> answeredRequests;
 
-   virtual std::vector<DarknetPeer*> findNextHop(DarknetMessage* msg);
-   virtual void handleSelfMessage(cMessage *msg);
-   virtual void initialize(int stage);
-   virtual void handleRequest(DarknetMessage* request);
+    virtual std::vector<DarknetPeer*> findNextHop(DarknetMessage* msg);
+    virtual void handleSelfMessage(cMessage *msg);
+    virtual void initialize(int stage);
+    virtual void handleRequest(DarknetMessage* request);
 
 };
 

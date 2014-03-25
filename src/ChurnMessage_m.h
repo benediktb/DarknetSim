@@ -20,14 +20,11 @@ class DarknetChurnNode;
 typedef DarknetChurnNode *NodePtr;
 
 enum ChurnMessageType {
-    CHURN_GO_ON = 0,
-    CHURN_GO_OFF = 1
+    CHURN_GO_ON = 0, CHURN_GO_OFF = 1
 };
 
 #define ChurnMessageTypeToString(type) ((type == CHURN_GO_ON) ? "ON" : "OFF")
 // }}
-
-
 
 /**
  * Class generated from <tt>ChurnMessage.msg</tt> by opp_msgc.
@@ -38,39 +35,47 @@ enum ChurnMessageType {
  * }
  * </pre>
  */
-class ChurnMessage : public ::cMessage
-{
-  protected:
+class ChurnMessage: public ::cMessage {
+protected:
     NodePtr node_var;
     ChurnMessageType type_var;
 
-  private:
+private:
     void copy(const ChurnMessage& other);
 
-  protected:
+protected:
     // protected and unimplemented operator==(), to prevent accidental usage
     bool operator==(const ChurnMessage&);
 
-  public:
-    ChurnMessage(const char *name=NULL, int kind=0);
+public:
+    ChurnMessage(const char *name = NULL, int kind = 0);
     ChurnMessage(const ChurnMessage& other);
     virtual ~ChurnMessage();
     ChurnMessage& operator=(const ChurnMessage& other);
-    virtual ChurnMessage *dup() const {return new ChurnMessage(*this);}
+    virtual ChurnMessage *dup() const {
+        return new ChurnMessage(*this);
+    }
     virtual void parsimPack(cCommBuffer *b);
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
     virtual NodePtr& getNode();
-    virtual const NodePtr& getNode() const {return const_cast<ChurnMessage*>(this)->getNode();}
+    virtual const NodePtr& getNode() const {
+        return const_cast<ChurnMessage*>(this)->getNode();
+    }
     virtual void setNode(const NodePtr& node);
     virtual ChurnMessageType& getType();
-    virtual const ChurnMessageType& getType() const {return const_cast<ChurnMessage*>(this)->getType();}
+    virtual const ChurnMessageType& getType() const {
+        return const_cast<ChurnMessage*>(this)->getType();
+    }
     virtual void setType(const ChurnMessageType& type);
 };
 
-inline void doPacking(cCommBuffer *b, ChurnMessage& obj) {obj.parsimPack(b);}
-inline void doUnpacking(cCommBuffer *b, ChurnMessage& obj) {obj.parsimUnpack(b);}
-
+inline void doPacking(cCommBuffer *b, ChurnMessage& obj) {
+    obj.parsimPack(b);
+}
+inline void doUnpacking(cCommBuffer *b, ChurnMessage& obj) {
+    obj.parsimUnpack(b);
+}
 
 #endif // _CHURNMESSAGE_M_H_

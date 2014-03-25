@@ -25,15 +25,17 @@
 typedef std::pair<IPvXAddress, int> UDPAddress;
 
 typedef struct DarknetPeer DarknetPeer;
-struct DarknetPeer{
+struct DarknetPeer {
     std::string nodeID;
     UDPAddress address;
     bool operator<(const DarknetPeer& other) const {
         return address < other.address;
-    };
+    }
+    ;
     bool operator==(const DarknetPeer& other) const {
         return nodeID == other.nodeID;
-    };
+    }
+    ;
 };
 
 typedef struct {
@@ -43,10 +45,14 @@ typedef struct {
     std::string destId;
 } seenPacket;
 
-class DarknetBaseNode : public AppBase {
+class DarknetBaseNode: public AppBase {
 public:
-    DarknetBaseNode() {};
-    virtual ~DarknetBaseNode() { };
+    DarknetBaseNode() {
+    }
+    ;
+    virtual ~DarknetBaseNode() {
+    }
+    ;
 
     std::string getNodeID();
 
@@ -77,22 +83,27 @@ protected:
     simsignal_t sigResponseRemainingTTL;
 
     // Things you probably don't have to change
-    virtual int numInitStages() const { return 5; }
+    virtual int numInitStages() const {
+        return 5;
+    }
     virtual void connectAllFriends();
-    virtual void addPeer(std::string nodeID, IPvXAddress& destAddr, int destPort);
+    virtual void addPeer(std::string nodeID, IPvXAddress& destAddr,
+            int destPort);
 
     virtual DarknetMessage* makeRequest(std::string nodeID);
-    virtual DarknetMessage* makeRequest(DarknetMessage *msg, std::string nodeID);
+    virtual DarknetMessage* makeRequest(DarknetMessage *msg,
+            std::string nodeID);
     virtual void makeResponse(DarknetMessage *msg, DarknetMessage *request);
     virtual bool sendDirectMessage(DarknetMessage* msg);
     virtual bool sendMessage(DarknetMessage* msg);
-    virtual void sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr, int destPort);
-    virtual void sendToUDP(DarknetMessage *msg, int srcPort, const IPvXAddress& destAddr, int destPort);
+    virtual void sendPacket(DarknetMessage* pkg, IPvXAddress& destAddr,
+            int destPort);
+    virtual void sendToUDP(DarknetMessage *msg, int srcPort,
+            const IPvXAddress& destAddr, int destPort);
     virtual IPv4Address getLocalIPv4Address();
 
     virtual void handleUDPMessage(cMessage* msg);
     virtual void handleMessageWhenUp(cMessage *msg);
-
 
     // Things you probably want to implement or extend
     virtual void initialize(int stage);
@@ -101,19 +112,17 @@ protected:
     virtual bool crashApp(IDoneCallback *doneCallback);
 
     virtual void handleDarknetMessage(DarknetMessage* msg, DarknetPeer *sender);
-    virtual void handleIncomingMessage(DarknetMessage* msg, DarknetPeer *sender);
+    virtual void handleIncomingMessage(DarknetMessage* msg,
+            DarknetPeer *sender);
     virtual void handleRequest(DarknetMessage* msg, DarknetPeer *sender);
     virtual void forwardMessage(DarknetMessage* msg, DarknetPeer *sender);
     virtual void forwardResponse(DarknetMessage* msg);
-
-
 
     // Things you have to implement
     virtual void connectPeer(std::string nodeID) = 0;
 
     virtual void handleSelfMessage(cMessage* msg) = 0;
     virtual std::vector<DarknetPeer*> findNextHop(DarknetMessage* msg) = 0;
-
 
 };
 

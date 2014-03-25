@@ -18,13 +18,14 @@
 #include <iostream>
 #include <fstream>
 
-Define_Module(ChurnController);
+Define_Module(ChurnController)
+;
 
 void ChurnController::initialize() {
     useChurn = par("useChurn").boolValue();
 
     if (!useChurn) {
-        EV << "Not using churn" << endl;
+        EV<< "Not using churn" << endl;
         return;
     }
 
@@ -36,7 +37,8 @@ void ChurnController::initialize() {
 
 }
 
-std::vector<std::string>* ChurnController::readNodesFromTraceFile(std::ifstream& tracefile) {
+std::vector<std::string>* ChurnController::readNodesFromTraceFile(
+        std::ifstream& tracefile) {
     std::vector<std::string>* nodeStrings = new std::vector<std::string>();
 
     if (tracefile.is_open()) {
@@ -52,8 +54,10 @@ std::vector<std::string>* ChurnController::readNodesFromTraceFile(std::ifstream&
     return nodeStrings;
 }
 
-void ChurnController::parseNodeLineFromTraceFile(std::map<std::string, NodeTrace*>& nodeTraces, std::string line) {
-    std::vector<std::string> lineParts = cStringTokenizer(line.c_str(), ";").asVector();
+void ChurnController::parseNodeLineFromTraceFile(
+        std::map<std::string, NodeTrace*>& nodeTraces, std::string line) {
+    std::vector<std::string> lineParts =
+            cStringTokenizer(line.c_str(), ";").asVector();
 
     if (lineParts.size() != 3) {
         error(("Malformed line in trace file: `" + line + "'").c_str());
@@ -66,7 +70,8 @@ void ChurnController::parseNodeLineFromTraceFile(std::map<std::string, NodeTrace
     std::string stateString = lineParts[1];
     trace->startState = (stateString == "1");
 
-    std::vector<int> switchTimesVec = cStringTokenizer(lineParts[2].c_str(), ",").asIntVector();
+    std::vector<int> switchTimesVec = cStringTokenizer(lineParts[2].c_str(),
+            ",").asIntVector();
     // Make cleanly allocated copy
     std::vector<int>* switchTimes = new std::vector<int>(switchTimesVec);
     trace->switchTimes = switchTimes;
@@ -76,14 +81,14 @@ void ChurnController::parseNodeLineFromTraceFile(std::map<std::string, NodeTrace
 }
 
 void ChurnController::parseTraceFile(std::string filename) {
-    EV << "Using trace file `" << filename << "' for churn data" << endl;
+    EV<< "Using trace file `" << filename << "' for churn data" << endl;
 
     std::ifstream tracefile(filename.c_str());
     std::vector<std::string>* nodeStrings = readNodesFromTraceFile(tracefile);
 
     if (nodeStrings == NULL) {
         error(("Unable to open trace file. Maybe wrong working directory: `" +
-             std::string(getcwd(NULL, 0)) + "'").c_str());
+                        std::string(getcwd(NULL, 0)) + "'").c_str());
     }
 
     nodeTraces = std::map<std::string, NodeTrace*>();
@@ -108,7 +113,8 @@ NodeTrace* ChurnController::getTrace(std::string nodeID) {
 }
 
 void ChurnController::doStartup(DarknetChurnNode* node) {
-    Enter_Method_Silent(); // public method, possible context change
+    Enter_Method_Silent
+    (); // public method, possible context change
 
     if (!useChurn) {
         return;
@@ -120,12 +126,12 @@ void ChurnController::doStartup(DarknetChurnNode* node) {
     }
 
     if (!node->startState) {
-        EV << "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
+        EV<< "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
         scheduleChurn(node, CHURN_GO_ON, node->offTimeDistribution);
     } else {
         EV << "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl;
         scheduleChurn(node, CHURN_GO_OFF, node->onTimeDistribution);
-   }
+    }
 }
 
 int ChurnController::getNextTraceSwitchTime(NodeTrace* trace) {
@@ -145,20 +151,20 @@ void ChurnController::doStartupWithTraces(DarknetChurnNode* node) {
     int nextSwitchTime = getNextTraceSwitchTime(trace);
 
     if (nextSwitchTime == -1) {
-        EV << "Node " << node->getNodeID() << " is OFF at the start, won't go on at all " <<
-                "-OR- trace for this node is missing" << endl;
+        EV<< "Node " << node->getNodeID() << " is OFF at the start, won't go on at all " <<
+        "-OR- trace for this node is missing" << endl;
         node->startState = false;
         return;
     }
 
     node->startState = trace->startState;
     if (!trace->startState) {
-        EV << "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
-         scheduleChurn(node, CHURN_GO_ON, nextSwitchTime);
+        EV<< "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
+        scheduleChurn(node, CHURN_GO_ON, nextSwitchTime);
     } else {
         EV << "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl;
         scheduleChurn(node, CHURN_GO_OFF, nextSwitchTime);
-   }
+    }
 }
 
 void ChurnController::handleMessage(cMessage* msg) {
@@ -187,8 +193,8 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
         nextSwitchTime = getNextTraceSwitchTime(trace);
 
         if (nextSwitchTime == -1) {
-            EV << "No more trace data for node " << node->getNodeID() <<
-                    ", no more churn scheduled here" << endl;
+            EV<< "No more trace data for node " << node->getNodeID() <<
+            ", no more churn scheduled here" << endl;
         }
     }
 
@@ -221,15 +227,15 @@ void ChurnController::scheduleChurn(DarknetChurnNode* node,
     scheduleChurn(node, type, nextChurnTime);
 }
 
-
 void ChurnController::scheduleChurn(DarknetChurnNode* node,
         ChurnMessageType type, int time) {
-    ChurnMessage* cmsg = new ChurnMessage((node->getNodeID() + " " + ChurnMessageTypeToString(type)).c_str());
+    ChurnMessage* cmsg = new ChurnMessage(
+            (node->getNodeID() + " " + ChurnMessageTypeToString(type)).c_str());
 
     cmsg->setType(type);
     cmsg->setNode(node);
 
-    EV << "Scheduling churn type " << ChurnMessageTypeToString(type) << " on node " << node->getNodeID() << " in " << time << endl;
+    EV<< "Scheduling churn type " << ChurnMessageTypeToString(type) << " on node " << node->getNodeID() << " in " << time << endl;
     scheduleAt(simTime() + time, cmsg);
     pendingChurnMessages.insert(cmsg);
 }

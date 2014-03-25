@@ -15,24 +15,17 @@
 
 // cplusplus {{
 enum DarknetMessageType {
-    DM_UNKNOWN = 0,
-    DM_OTHER = 1,
-    
-    
-    DM_REQUEST = 10,
-    DM_RESPONSE = 11,
-    
-    
-    DM_CON_SYN = 20,
-    DM_CON_ACK = 21,
-    
+    DM_UNKNOWN = 0, DM_OTHER = 1,
+
+    DM_REQUEST = 10, DM_RESPONSE = 11,
+
+    DM_CON_SYN = 20, DM_CON_ACK = 21,
+
     DM_RCVACK = 25,
-    
+
     DM_FORWARD = 30
 };
 // }}
-
-
 
 /**
  * Class generated from <tt>darknetmessage.msg</tt> by opp_msgc.
@@ -71,30 +64,32 @@ enum DarknetMessageType {
  * Register_Class(DarknetMessage);
  * </pre>
  */
-class DarknetMessage_Base : public ::cPacket
-{
-  protected:
+class DarknetMessage_Base: public ::cPacket {
+protected:
     opp_string destNodeID_var;
     opp_string srcNodeID_var;
     int TTL_var;
     DarknetMessageType type_var;
     long requestMessageID_var;
 
-  private:
+private:
     void copy(const DarknetMessage_Base& other);
 
-  protected:
+protected:
     // protected and unimplemented operator==(), to prevent accidental usage
     bool operator==(const DarknetMessage_Base&);
     // make constructors protected to avoid instantiation
-    DarknetMessage_Base(const char *name=NULL, int kind=0);
+    DarknetMessage_Base(const char *name = NULL, int kind = 0);
     DarknetMessage_Base(const DarknetMessage_Base& other);
     // make assignment operator protected to force the user override it
     DarknetMessage_Base& operator=(const DarknetMessage_Base& other);
 
-  public:
+public:
     virtual ~DarknetMessage_Base();
-    virtual DarknetMessage_Base *dup() const {throw cRuntimeError("You forgot to manually add a dup() function to class DarknetMessage");}
+    virtual DarknetMessage_Base *dup() const {
+        throw cRuntimeError(
+                "You forgot to manually add a dup() function to class DarknetMessage");
+    }
     virtual void parsimPack(cCommBuffer *b);
     virtual void parsimUnpack(cCommBuffer *b);
 
@@ -106,11 +101,12 @@ class DarknetMessage_Base : public ::cPacket
     virtual int getTTL() const;
     virtual void setTTL(int TTL);
     virtual DarknetMessageType& getType();
-    virtual const DarknetMessageType& getType() const {return const_cast<DarknetMessage_Base*>(this)->getType();}
+    virtual const DarknetMessageType& getType() const {
+        return const_cast<DarknetMessage_Base*>(this)->getType();
+    }
     virtual void setType(const DarknetMessageType& type);
     virtual long getRequestMessageID() const;
     virtual void setRequestMessageID(long requestMessageID);
 };
-
 
 #endif // _DARKNETMESSAGE_M_H_

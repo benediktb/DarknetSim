@@ -11,7 +11,9 @@ class WeibullDistribution: public IRandomDistribution {
 protected:
     double a, b;
 public:
-    WeibullDistribution(double a, double b): a(a), b(b) {}
+    WeibullDistribution(double a, double b) :
+            a(a), b(b) {
+    }
 
     virtual double getNext();
 };

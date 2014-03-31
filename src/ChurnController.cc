@@ -222,8 +222,9 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
 
 void ChurnController::scheduleChurn(DarknetChurnNode* node,
         ChurnMessageType type, IRandomDistribution* distribution) {
+    // Distribution result is in minutes, we schedule for seconds
     // Don't allow for 0 sec of ON/OFF time, minimum is 1 sec
-    int nextChurnTime = (int) distribution->getNext() + 1;
+    int nextChurnTime = (int) (distribution->getNext() * 60.0) + 1;
     scheduleChurn(node, type, nextChurnTime);
 }
 

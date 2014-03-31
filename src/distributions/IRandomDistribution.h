@@ -7,6 +7,10 @@
 
 #include <distrib.h>
 
+/**
+ * Random distributions for churn times. ChurnController assumes result is given
+ * in minutes.
+ */
 class IRandomDistribution {
 public:
     virtual ~IRandomDistribution() {

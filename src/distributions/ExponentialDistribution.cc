@@ -5,6 +5,6 @@
 #include "ExponentialDistribution.h"
 
 double ExponentialDistribution::getNext() {
-    return exponential(mean);
+    return exponential(mean, randomGenerator);
 }
 

@@ -11,8 +11,8 @@ class ParetoDistribution: public IRandomDistribution {
 protected:
     double a, b, c;
 public:
-    ParetoDistribution(double a, double b, double c) :
-            a(a), b(b), c(c) {
+    ParetoDistribution(double a, double b, double c, int randomGenerator) :
+            IRandomDistribution(randomGenerator), a(a), b(b), c(c) {
     }
 
     virtual double getNext();

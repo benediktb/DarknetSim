@@ -8,6 +8,8 @@
 #include "IRandomDistribution.h"
 
 class RandomDistributionFactory {
+    static const int randomGenerator = 10;
+
 public:
     static IRandomDistribution* getDistribution(std::string distributionName,
             cModule* module, std::string parPrefix);

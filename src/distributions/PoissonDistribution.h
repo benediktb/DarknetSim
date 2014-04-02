@@ -11,8 +11,8 @@ class PoissonDistribution: public IRandomDistribution {
 protected:
     double lambda;
 public:
-    PoissonDistribution(double lambda) :
-            lambda(lambda) {
+    PoissonDistribution(double lambda, int randomGenerator) :
+        IRandomDistribution(randomGenerator), lambda(lambda) {
     }
 
     virtual double getNext();

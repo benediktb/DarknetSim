@@ -12,7 +12,12 @@
  * in minutes.
  */
 class IRandomDistribution {
+protected:
+    const int randomGenerator;
 public:
+    IRandomDistribution(int randomGenerator) :
+            randomGenerator(randomGenerator) {
+    }
     virtual ~IRandomDistribution() {
     }
     virtual double getNext() = 0;

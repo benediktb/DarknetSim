@@ -196,8 +196,10 @@ void DarknetOfflineDetectionNode::handleSelfMessage(cMessage* msg) {
 
 void DarknetOfflineDetectionNode::sendPacket(DarknetMessage* pkg,
         IPvXAddress& destAddr, int destPort) {
-    // No ACKs for ACKs ... therefore no retransmissions
-    if (pkg->getType() != DM_RCVACK) {
+    // No ACKs for ACKs ... therefore no retransmissions. Also no ACKs for
+    //   connection establishment
+    if ((pkg->getType() != DM_RCVACK) and (pkg->getType() != DM_CON_SYN) and
+            (pkg->getType() != DM_CON_SYNACK) and (pkg->getType() != DM_CON_ACK)) {
         DarknetMessage* dup = pkg->dup();
 
         std::stringstream nameStr;

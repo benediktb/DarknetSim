@@ -72,16 +72,24 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
     case DM_CON_SYN: {
         if (friendsByID.find(msg->getSrcNodeID()) != friendsByID.end()) {
             EV<< "Received CON_SYN from: " << msg->getSrcNodeID() << endl;
+            DarknetMessage *ack = new DarknetMessage("CON_SYNACK");
+            ack->setType(DM_CON_SYNACK);
+            ack->setTTL(defaultTTL);
+            ack->setDestNodeID(msg->getSrcNodeID());
+            sendDirectMessage(ack);
+        }
+        delete msg;
+        break;
+    }
+    case DM_CON_SYNACK: {
+        if (friendsByID.find(msg->getSrcNodeID()) != friendsByID.end()) {
+            EV<< "Received CON_SYNACK from: " << msg->getSrcNodeID() << endl;
             DarknetMessage *ack = new DarknetMessage("CON_ACK");
             ack->setType(DM_CON_ACK);
             ack->setTTL(defaultTTL);
             ack->setDestNodeID(msg->getSrcNodeID());
             sendDirectMessage(ack);
-
-            // If connection was lost to that peer: Re-Initiate connection
-            if (connected.find(msg->getSrcNodeID()) == connected.end()) {
-                connectPeer(msg->getSrcNodeID());
-            }
+            addActivePeer(msg->getSrcNodeID());
         }
         delete msg;
         break;

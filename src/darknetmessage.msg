@@ -25,6 +25,7 @@ enum DarknetMessageType {
     
     //MAINTENANCE_MESSAGES
     DM_CON_SYN = 20,
+    DM_CON_SYNACK = 22,
     DM_CON_ACK = 21,
     
     DM_RCVACK = 25,

@@ -89,13 +89,17 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
             ack->setTTL(defaultTTL);
             ack->setDestNodeID(msg->getSrcNodeID());
             sendDirectMessage(ack);
-            addActivePeer(msg->getSrcNodeID());
+            if (connected.find(msg->getSrcNodeID()) == connected.end()) {
+                addActivePeer(msg->getSrcNodeID());
+            }
         }
         delete msg;
         break;
     }
     case DM_CON_ACK: {
-        addActivePeer(msg->getSrcNodeID());
+        if (connected.find(msg->getSrcNodeID()) == connected.end()) {
+            addActivePeer(msg->getSrcNodeID());
+        }
         delete msg;
         break;
     }

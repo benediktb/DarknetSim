@@ -77,6 +77,11 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
             ack->setTTL(defaultTTL);
             ack->setDestNodeID(msg->getSrcNodeID());
             sendDirectMessage(ack);
+
+            // If connection was lost to that peer: Re-Initiate connection
+            if (connected.find(msg->getSrcNodeID()) == connected.end()) {
+                connectPeer(msg->getSrcNodeID());
+            }
         }
         delete msg;
         break;
@@ -93,16 +98,14 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
 }
 
 void DarknetOfflineDetectionNode::addActivePeer(std::string nodeId) {
-    if (connected.count(nodeId) == 0) {
-        connected.insert(nodeId);
-        EV<< "Connection to " << nodeId << " established" << endl;
-    }
+    connected.insert(nodeId);
+    EV<< "Connection to " << nodeId << " established" << endl;
 }
 
-        /*
-         * check if message is of type DM_RCVACK, if so stop resendTimer for according message.
-         * if not, send DM_RCVACK to sender and pass it to handleIncomingMessage
-         */
+    /*
+     * check if message is of type DM_RCVACK, if so stop resendTimer for according message.
+     * if not, send DM_RCVACK to sender and pass it to handleIncomingMessage
+     */
 void DarknetOfflineDetectionNode::handleDarknetMessage(DarknetMessage* msg,
         DarknetPeer *sender) {
     if (msg->getType() == DM_RCVACK) {

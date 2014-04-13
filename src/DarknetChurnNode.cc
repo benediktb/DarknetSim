@@ -126,7 +126,7 @@ bool DarknetChurnNode::startApp(IDoneCallback *doneCallback) {
 }
 
 bool DarknetChurnNode::stopApp(IDoneCallback *doneCallback) {
-    return DarknetOfflineDetectionNode::stopApp(doneCallback);
+    return crashApp(doneCallback);
 }
 
 bool DarknetChurnNode::crashApp(IDoneCallback *doneCallback) {
@@ -139,7 +139,7 @@ bool DarknetChurnNode::crashApp(IDoneCallback *doneCallback) {
  * Chooses random next hop.
  */
 std::vector<DarknetPeer*> DarknetChurnNode::findNextHop(DarknetMessage* msg) {
-    int nextHopIndex = uniform(0, 1) * connected.size();
+    int nextHopIndex = intuniform(0, connected.size() - 1);
     std::vector<DarknetPeer*> list;
     int i = 0;
     for (std::set<std::string>::iterator it = connected.begin();

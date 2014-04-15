@@ -29,6 +29,8 @@ void DarknetChurnNode::initialize(int stage) {
         sigChurnOn = registerSignal("sigChurnOn");
 
         startState = par("startState").boolValue();
+        usePings = par("usePings").boolValue();
+        pingFrequency = par("pingFrequency");
 
         churnController =
                 dynamic_cast<ChurnController *>(simulation.getModuleByPath("churnController"));
@@ -60,6 +62,45 @@ void DarknetChurnNode::initialize(int stage) {
     }
 }
 
+void DarknetChurnNode::handleSelfMessage(cMessage* msg) {
+    PingMessage* pmsg = dynamic_cast<PingMessage*>(msg);
+    if (usePings and (pmsg != NULL)) {
+        DarknetMessage* ping = new DarknetMessage("DM_PING");
+        ping->setType(DM_PING);
+        ping->setDestNodeID(pmsg->getPeerId());
+        sendDirectMessage(ping);
+        // No re-scheduling here: If no ACK -> remove peer; on ACK arrival it is
+        //  re-scheduled
+    } else {
+        DarknetOfflineDetectionNode::handleSelfMessage(msg);
+    }
+}
+void DarknetChurnNode::handleDarknetMessage(DarknetMessage *msg,
+        DarknetPeer *sender) {
+    if (usePings) {
+        // Reset ping timer
+        std::map<std::string, PingMessage*>::iterator pmIt = pingMessages.find(
+                sender->nodeID);
+        if (pmIt != pingMessages.end()) {
+            PingMessage* pmsg = pingMessages.at(sender->nodeID);
+            cancelEvent(pmsg);
+            scheduleAt(simTime() + pingFrequency, pmsg);
+        }
+    }
+
+    DarknetOfflineDetectionNode::handleDarknetMessage(msg, sender);
+}
+
+void DarknetChurnNode::handleIncomingMessage(DarknetMessage *msg,
+        DarknetPeer *sender) {
+    if (msg->getType() == DM_PING) {
+        // We don't need this anymore, RCVACK is already sent
+        delete msg;
+    } else {
+        DarknetOfflineDetectionNode::handleIncomingMessage(msg, sender);
+    }
+}
+
 void DarknetChurnNode::handleUDPMessage(cMessage* msg) {
     if (isOnline) {
         DarknetOfflineDetectionNode::handleUDPMessage(msg);
@@ -77,6 +118,26 @@ void DarknetChurnNode::sendToUDP(DarknetMessage *msg, int srcPort,
     } else {
         error("Tried to send UDP packet while offline.");
     }
+}
+
+void DarknetChurnNode::addActivePeer(std::string nodeId) {
+    DarknetOfflineDetectionNode::addActivePeer(nodeId);
+    if (usePings) {
+        PingMessage* pmsg = new PingMessage(("ping " + nodeId).c_str());
+        pmsg->setPeerId(nodeId.c_str());
+        pingMessages.insert(std::make_pair(nodeId, pmsg));
+        scheduleAt(simTime() + pingFrequency, pmsg);
+    }
+}
+
+void DarknetChurnNode::removeInactivePeer(std::string peerId) {
+    if (usePings) {
+        if (pingMessages.find(peerId) != pingMessages.end()) {
+            cancelAndDelete(pingMessages.at(peerId));
+            pingMessages.erase(peerId);
+        }
+    }
+    DarknetOfflineDetectionNode::removeInactivePeer(peerId);
 }
 
 void DarknetChurnNode::churnGoOnline() {
@@ -108,6 +169,15 @@ void DarknetChurnNode::churnGoOffline() {
 
 void DarknetChurnNode::goOffline() {
     DarknetOfflineDetectionNode::crashApp(NULL);
+
+    if (usePings) {
+        std::map<std::string, PingMessage*>::iterator pmIt;
+        for (pmIt = pingMessages.begin(); pmIt != pingMessages.end(); pmIt++) {
+            cancelAndDelete(pmIt->second);
+        }
+        pingMessages.clear();
+    }
+
     markAsOffline();
     emit(sigChurnOff, simTime() - lastSwitch);
     emit(sigChurnOnOff, 0);

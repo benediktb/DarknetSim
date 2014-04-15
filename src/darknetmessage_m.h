@@ -28,6 +28,7 @@ enum DarknetMessageType {
     DM_CON_ACK = 21,
     
     DM_RCVACK = 25,
+    DM_PING = 26,
     
     DM_FORWARD = 30
 };

@@ -19,6 +19,7 @@
 #include "DarknetOfflineDetectionNode.h"
 #include "ChurnController.h"
 #include "ChurnMessage_m.h"
+#include "PingMessage_m.h"
 #include "IRandomDistribution.h"
 #include <NodeOperations.h>
 
@@ -42,16 +43,25 @@ protected:
     simsignal_t sigChurnOn;
     simsignal_t sigChurnOff;
 
+    std::map<std::string, PingMessage*> pingMessages;
+
     ChurnController* churnController;
     bool startState;
     bool isOnline;
     simtime_t lastSwitch;
+    bool usePings;
+    int pingFrequency;
 
     /** Distribution for online time (time till next offline time) */
     IRandomDistribution* onTimeDistribution;
 
     /** Distribution for offline time (time till next online time) */
     IRandomDistribution* offTimeDistribution;
+
+    virtual void handleSelfMessage(cMessage* msg);
+    virtual void handleDarknetMessage(DarknetMessage *msg, DarknetPeer *sender);
+    virtual void handleIncomingMessage(DarknetMessage *msg,
+            DarknetPeer *sender);
 
     virtual void sendToUDP(DarknetMessage *msg, int srcPort,
             const IPvXAddress& destAddr, int destPort);
@@ -65,6 +75,9 @@ protected:
 
     // To extend/overwrite:
     virtual void initialize(int stage);
+
+    virtual void addActivePeer(std::string nodeId);
+    virtual void removeInactivePeer(std::string peerId);
 
     virtual std::vector<DarknetPeer*> findNextHop(DarknetMessage* msg);
 

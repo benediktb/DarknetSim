@@ -24,10 +24,14 @@ std::string DarknetMessage::typeToString(DarknetMessageType t) {
         return std::string("DM_RESPONSE");
     case DM_CON_SYN:
         return std::string("DM_CON_SYN");
+    case DM_CON_SYNACK:
+        return std::string("DM_CON_SYNACK");
     case DM_CON_ACK:
         return std::string("DM_CON_ACK");
     case DM_RCVACK:
         return std::string("DM_RCVACK");
+    case DM_PING:
+        return std::string("DM_PING");
     case DM_FORWARD:
         return std::string("DM_FORWARD");
     default:

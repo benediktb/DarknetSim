@@ -11,38 +11,8 @@
 // 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+//
 
-cplusplus {{
-
-enum DarknetMessageType {
-    DM_UNKNOWN = 0,
-    DM_OTHER = 1,
-    
-    //DATA MESSAGES
-    DM_REQUEST = 10,
-    DM_RESPONSE = 11,
-    
-    //MAINTENANCE_MESSAGES
-    DM_CON_SYN = 20,
-    DM_CON_SYNACK = 22,
-    DM_CON_ACK = 21,
-    
-    DM_RCVACK = 25,
-    DM_PING = 26,
-    
-    DM_FORWARD = 30
-};
-
-}};
-
-class noncobject DarknetMessageType;
-
-packet DarknetMessage {
-    @customize(true);  // see the generated C++ header for more info
-    string destNodeID;
-    string srcNodeID;
-    int TTL = 32;
-    DarknetMessageType type;
-    long requestMessageID; //if this is a Response: the ID of the Message which requested this
+message PingMessage {
+    string peerId;
 }

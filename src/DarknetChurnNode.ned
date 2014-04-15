@@ -21,8 +21,11 @@ simple DarknetChurnNode extends DarknetOfflineDetectionNode {
         @statistic[sigChurnOnOff](record=vector);
         @statistic[sigChurnOff](record=stats,vector);
         @statistic[sigChurnOn](record=stats,vector);
-	    
+
 		bool startState = default(true);
+		
+		bool usePings = default(true);
+		int pingFrequency @unit(s) = default(10s);
 
 		// For distributions, see subfolder distributions/ and the factory there
 		string onTimeDistribution = default("exponential");

@@ -81,12 +81,14 @@ OBJS = \
     $O/distributions/UniformDistribution.o \
     $O/distributions/WeibullDistribution.o \
     $O/ChurnMessage_m.o \
-    $O/darknetmessage_m.o
+    $O/darknetmessage_m.o \
+    $O/PingMessage_m.o
 
 # Message files
 MSGFILES = \
     ChurnMessage.msg \
-    darknetmessage.msg
+    darknetmessage.msg \
+    PingMessage.msg
 
 # Other makefile variables (-K)
 INET_2_2_0_PROJ=../../inet-2.2.0
@@ -181,6 +183,7 @@ $O/ChurnController.o: ChurnController.cc \
   ../../inet-2.2.0/src/base/ILifecycle.h \
   ../../inet-2.2.0/src/applications/AppBase.h \
   ../../inet-2.2.0/src/base/INETDefs.h \
+  ./PingMessage_m.h \
   ../../inet-2.2.0/src/networklayer/contract/IPv6Address.h \
   ../../inet-2.2.0/src/base/LifecycleOperation.h \
   ./DarknetChurnNode.h \
@@ -226,6 +229,7 @@ $O/DarknetChurnNode.o: DarknetChurnNode.cc \
   ../../inet-2.2.0/src/base/ILifecycle.h \
   ../../inet-2.2.0/src/applications/AppBase.h \
   ../../inet-2.2.0/src/base/INETDefs.h \
+  ./PingMessage_m.h \
   ../../inet-2.2.0/src/networklayer/contract/IPv6Address.h \
   ../../inet-2.2.0/src/base/LifecycleOperation.h \
   ./DarknetChurnNode.h \
@@ -283,6 +287,8 @@ $O/FloodingNode.o: FloodingNode.cc \
   ./darknetmessage.h \
   ../../inet-2.2.0/src/transport/contract/UDPSocket.h \
   ./darknetmessage_m.h
+$O/PingMessage_m.o: PingMessage_m.cc \
+  ./PingMessage_m.h
 $O/RandomwalkNode.o: RandomwalkNode.cc \
   ./DarknetSimpleNode.h \
   ../../inet-2.2.0/src/networklayer/contract/IPv4Address.h \

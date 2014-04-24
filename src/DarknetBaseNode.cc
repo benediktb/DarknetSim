@@ -89,7 +89,11 @@ void DarknetBaseNode::initialize(int stage) {
                 int port;
                 port = convert >> port ? port : 0; //convert string to int (user 0 on error)
                 IPvXAddress ip = resolver.resolve(moduleName.c_str());
-                addPeer(nodeID, ip, port);
+                if (nodeID != this->nodeID) {
+                    addPeer(nodeID, ip, port);
+                } else {
+                    error("No friend loops allowed! Check network topology.");
+                }
             } else {
                 EV<< "Error on parsing peer list; this peer seems malformed: " << (*iter) << endl;
             }

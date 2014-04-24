@@ -19,7 +19,7 @@
 #include <omnetpp.h>
 #include <AppBase.h>
 #include <IPvXAddress.h>
-#include <UDPSocket.h>
+#include <IUDPSocket.h>
 #include "darknetmessage.h"
 
 typedef std::pair<IPvXAddress, int> UDPAddress;
@@ -47,19 +47,18 @@ typedef struct {
 
 class DarknetBaseNode: public AppBase {
 public:
-    DarknetBaseNode() {
+    DarknetBaseNode(): socket(NULL) {
     }
-    ;
     virtual ~DarknetBaseNode() {
+        delete socket;
     }
-    ;
 
     std::string getNodeID();
 
 protected:
 
     std::string nodeID;
-    UDPSocket socket;
+    IUDPSocket* socket;
     int localPort;
     int defaultTTL;
 
@@ -86,6 +85,7 @@ protected:
     virtual int numInitStages() const {
         return 5;
     }
+    virtual IUDPSocket* getSocket();
     virtual void connectAllFriends();
     virtual void addPeer(std::string nodeID, IPvXAddress& destAddr,
             int destPort);

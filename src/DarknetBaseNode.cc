@@ -53,12 +53,17 @@ void DarknetBaseNode::addPeer(std::string nodeID, IPvXAddress& destAddr,
             std::pair<IPvXAddress, DarknetPeer*>(destAddr, peer));
 }
 
+IUDPSocket* DarknetBaseNode::getSocket() {
+    return new IUDPSocket();
+}
+
 void DarknetBaseNode::initialize(int stage) {
     switch (stage) {
     case 0:
         localPort = par("localPort");
-        socket.setOutputGate(gate("udpOut"));
-        socket.bind(localPort);
+        socket = getSocket();
+        socket->setOutputGate(gate("udpOut"));
+        socket->bind(localPort);
 
         nodeID = par("nodeID").stdstringValue();
         defaultTTL = par("defaultTTL");
@@ -109,7 +114,7 @@ void DarknetBaseNode::sendToUDP(DarknetMessage *msg, int srcPort,
     EV << destAddr << ":" << destPort << ", content: ";
     EV << msg->toString() << " (" << msg->getByteLength() << " bytes)" << endl;
 
-    socket.sendTo(msg, destAddr, destPort);
+    socket->sendTo(msg, destAddr, destPort);
 }
 
 void DarknetBaseNode::sendPacket(DarknetMessage* dmsg, IPvXAddress& destAddr,
@@ -188,6 +193,7 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
             return;
         }
         DarknetPeer* sender = it->second;
+        socket->markMessageReceived(msg);
         EV<< "Received DarknetMessage at " << getLocalIPv4Address() << " from " << sender->address.first << ", peer " << sender->nodeID << endl;
         handleDarknetMessage(dm, sender);
     } else {

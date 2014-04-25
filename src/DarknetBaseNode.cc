@@ -197,7 +197,6 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
             return;
         }
         DarknetPeer* sender = it->second;
-        socket->markMessageReceived(msg);
         EV<< "Received DarknetMessage at " << getLocalIPv4Address() << " from " << sender->address.first << ", peer " << sender->nodeID << endl;
         handleDarknetMessage(dm, sender);
     } else {

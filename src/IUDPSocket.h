@@ -83,13 +83,6 @@ public:
         return sockId;
     }
 
-    /**
-     * ADDED over INET: Handles a received message.
-     */
-    virtual void markMessageReceived(cMessage* msg) {
-        // Does nothing in the base class.
-    }
-
     /** @name Opening and closing connections, sending data */
     //@{
     /**

@@ -95,14 +95,15 @@ void DarknetBaseNode::initialize(int stage) {
                     error("No friend loops allowed! Check network topology.");
                 }
             } else {
-                EV<< "Error on parsing peer list; this peer seems malformed: " << (*iter) << endl;
+                DEBUG("Error on parsing peer list; this peer seems malformed: " << (*iter) << endl);
             }
-        }}
+        }
+    }
 
-    break;
-}
+        break;
+    }
 
-AppBase::initialize(stage);
+    AppBase::initialize(stage);
 }
 
 void DarknetBaseNode::connectAllFriends() {
@@ -114,9 +115,7 @@ void DarknetBaseNode::connectAllFriends() {
 
 void DarknetBaseNode::sendToUDP(DarknetMessage *msg, int srcPort,
         const IPvXAddress& destAddr, int destPort) {
-    EV<< "Sending UDP packet: " << getLocalIPv4Address() << " to ";
-    EV << destAddr << ":" << destPort << ", content: ";
-    EV << msg->toString() << " (" << msg->getByteLength() << " bytes)" << endl;
+    DEBUG("Sending UDP packet: " << getLocalIPv4Address() << " to ");DEBUG(destAddr << ":" << destPort << ", content: ");DEBUG(msg->toString() << " (" << msg->getByteLength() << " bytes)" << endl);
 
     socket->sendTo(msg, destAddr, destPort);
 }
@@ -138,7 +137,7 @@ bool DarknetBaseNode::sendDirectMessage(DarknetMessage* msg) {
         sendPacket(msg, peer->address.first, peer->address.second);
         return true;
     } else { //destination node not in peers list -> not possible to send direct message
-        EV<< "destination node(" << msg->getDestNodeID() << " not in peers list -> not possible to send direct message: " << msg;
+        DEBUG("destination node(" << msg->getDestNodeID() << " not in peers list -> not possible to send direct message: " << msg << endl);
         return false;
     }
 }
@@ -155,16 +154,16 @@ bool DarknetBaseNode::sendMessage(DarknetMessage* msg) {
         delete msg;
         return true;
     } else {
-        EV<< "No next hop found for message: " << msg << endl;
+        DEBUG("No next hop found for message: " << msg << endl);
         //TODO: implement proper default error handling here
         delete msg;
         return false;
     }
 }
 
-        /**
-         * Gets the first, non-loopback IPv4 address assigned to this host.
-         */
+/**
+ * Gets the first, non-loopback IPv4 address assigned to this host.
+ */
 IPv4Address DarknetBaseNode::getLocalIPv4Address() {
     RoutingTable* rt = (RoutingTable*) IPvXAddressResolver().routingTableOf(
             this->getParentModule());
@@ -187,20 +186,21 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
         typedef std::map<IPvXAddress, DarknetPeer*>::iterator it_type;
         it_type it = friendsByAddress.find(udi->getSrcAddr());
         if (friendsByAddress.end() == it) {
-            EV<< "Could not get sending peer for message: " << msg << endl;
-            EV << "  + Source address: " << udi->getSrcAddr().str() << ":" << udi->getSrcPort() << endl;
-            EV << "  + Content of address -> peer map: " << endl;
-            for(it_type iterator = friendsByAddress.begin(); iterator != friendsByAddress.end(); iterator++) {
-                EV << "    " << iterator->first.str() << " -> " << iterator->second->nodeID << endl;
+            DEBUG("Could not get sending peer for message: " << msg << endl);
+            DEBUG("  + Source address: " << udi->getSrcAddr().str() << ":" << udi->getSrcPort() << endl);
+            DEBUG("  + Content of address -> peer map: " << endl);
+            for (it_type iterator = friendsByAddress.begin();
+                    iterator != friendsByAddress.end(); iterator++) {
+                DEBUG("    " << iterator->first.str() << " -> " << iterator->second->nodeID << endl);
             }
             delete msg;
             return;
         }
         DarknetPeer* sender = it->second;
-        EV<< "Received DarknetMessage at " << getLocalIPv4Address() << " from " << sender->address.first << ", peer " << sender->nodeID << endl;
+        DEBUG("Received DarknetMessage at " << getLocalIPv4Address() << " from " << sender->address.first << ", peer " << sender->nodeID << endl);
         handleDarknetMessage(dm, sender);
     } else {
-        EV<< "received an unknown cMessage: " << msg << endl;
+        DEBUG("received an unknown cMessage: " << msg << endl);
         delete msg;
     }
 }
@@ -261,15 +261,15 @@ void DarknetBaseNode::forwardMessage(DarknetMessage* msg, DarknetPeer *sender) {
         sendMessage(msg);
     } else {
         // TODO: inform simulator/user of droped message (or at least count it)
-        EV<< "dropped message";
-        emit(sigDropTtlExeeded,msg->getTreeId());
+        DEBUG("dropped message");
+        emit(sigDropTtlExeeded, msg->getTreeId());
         delete msg;
     }
 }
 
-        /*
-         * forward a Response to a previously forwarded Message back its path "up"
-         */
+/*
+ * forward a Response to a previously forwarded Message back its path "up"
+ */
 void DarknetBaseNode::forwardResponse(DarknetMessage* msg) {
     msg->setDestNodeID(forwardedIdTable.at(msg->getRequestMessageID()).c_str());
     forwardedIdTable.erase(msg->getRequestMessageID());
@@ -318,11 +318,11 @@ void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {
     } else if (msg->getKind() == UDP_I_DATA) {
         handleUDPMessage(msg);
     } else if (msg->getKind() == UDP_I_ERROR) {
-        EV<< "Ignoring UDP error report" << endl;
+        DEBUG("Ignoring UDP error report" << endl);
         delete msg;
-    }
-    else {
-        error("Unrecognized message (%s)%s", msg->getClassName(), msg->getName());
+    } else {
+        error("Unrecognized message (%s)%s", msg->getClassName(),
+                msg->getName());
     }
 
 }

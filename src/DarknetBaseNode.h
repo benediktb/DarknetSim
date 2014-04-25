@@ -21,6 +21,7 @@
 #include <IPvXAddress.h>
 #include <IUDPSocket.h>
 #include "darknetmessage.h"
+#include "./Debug.h"
 
 typedef std::pair<IPvXAddress, int> UDPAddress;
 

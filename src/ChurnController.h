@@ -21,6 +21,7 @@
 #include "ChurnMessage_m.h"
 #include <LifecycleController.h>
 #include <NodeOperations.h>
+#include "./Debug.h"
 
 typedef struct {
     std::string* nodeID;

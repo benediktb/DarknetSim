@@ -82,7 +82,7 @@ void DarknetChurnNode::handleDarknetMessage(DarknetMessage *msg,
         std::map<std::string, PingMessage*>::iterator pmIt = pingMessages.find(
                 sender->nodeID);
         if (pmIt != pingMessages.end()) {
-            PingMessage* pmsg = pingMessages.at(sender->nodeID);
+            PingMessage* pmsg = pmIt->second;
             cancelEvent(pmsg);
             scheduleAt(calcNextPingTime(), pmsg);
         }
@@ -136,8 +136,9 @@ void DarknetChurnNode::addActivePeer(std::string nodeId) {
 
 void DarknetChurnNode::removeInactivePeer(std::string peerId) {
     if (usePings) {
-        if (pingMessages.find(peerId) != pingMessages.end()) {
-            cancelAndDelete(pingMessages.at(peerId));
+        std::map<std::string, PingMessage*>::iterator pmIt = pingMessages.find(peerId);
+        if (pmIt != pingMessages.end()) {
+            cancelAndDelete(pmIt->second);
             pingMessages.erase(peerId);
         }
     }

@@ -25,7 +25,7 @@ void ChurnController::initialize() {
     useChurn = par("useChurn").boolValue();
 
     if (!useChurn) {
-        EV<< "Not using churn" << endl;
+        DEBUG("Not using churn" << endl);
         return;
     }
 
@@ -81,14 +81,15 @@ void ChurnController::parseNodeLineFromTraceFile(
 }
 
 void ChurnController::parseTraceFile(std::string filename) {
-    EV<< "Using trace file `" << filename << "' for churn data" << endl;
+    DEBUG("Using trace file `" << filename << "' for churn data" << endl);
 
     std::ifstream tracefile(filename.c_str());
     std::vector<std::string>* nodeStrings = readNodesFromTraceFile(tracefile);
 
     if (nodeStrings == NULL) {
-        error(("Unable to open trace file. Maybe wrong working directory: `" +
-                        std::string(getcwd(NULL, 0)) + "'").c_str());
+        error(
+                ("Unable to open trace file. Maybe wrong working directory: `"
+                        + std::string(getcwd(NULL, 0)) + "'").c_str());
     }
 
     nodeTraces = std::map<std::string, NodeTrace*>();
@@ -98,7 +99,7 @@ void ChurnController::parseTraceFile(std::string filename) {
         parseNodeLineFromTraceFile(nodeTraces, *nIt);
     }
 
-    EV << "Loaded " << nodeTraces.size() << " traces from file" << endl;
+    DEBUG("Loaded " << nodeTraces.size() << " traces from file" << endl);
     delete nodeStrings;
 }
 
@@ -126,10 +127,10 @@ void ChurnController::doStartup(DarknetChurnNode* node) {
     }
 
     if (!node->startState) {
-        EV<< "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
+        DEBUG("Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl);
         scheduleChurn(node, CHURN_GO_ON, node->offTimeDistribution);
     } else {
-        EV << "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl;
+        DEBUG("Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl);
         scheduleChurn(node, CHURN_GO_OFF, node->onTimeDistribution);
     }
 }
@@ -151,18 +152,18 @@ void ChurnController::doStartupWithTraces(DarknetChurnNode* node) {
     int nextSwitchTime = getNextTraceSwitchTime(trace);
 
     if (nextSwitchTime == -1) {
-        EV<< "Node " << node->getNodeID() << " is OFF at the start, won't go on at all " <<
-        "-OR- trace for this node is missing" << endl;
+        DEBUG("Node " << node->getNodeID() << " is OFF at the start, won't go on at all " <<
+                "-OR- trace for this node is missing" << endl);
         node->startState = false;
         return;
     }
 
     node->startState = trace->startState;
     if (!trace->startState) {
-        EV<< "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl;
+        DEBUG("Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl);
         scheduleChurn(node, CHURN_GO_ON, nextSwitchTime);
     } else {
-        EV << "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl;
+        DEBUG("Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl);
         scheduleChurn(node, CHURN_GO_OFF, nextSwitchTime);
     }
 }
@@ -193,8 +194,8 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
         nextSwitchTime = getNextTraceSwitchTime(trace);
 
         if (nextSwitchTime == -1) {
-            EV<< "No more trace data for node " << node->getNodeID() <<
-            ", no more churn scheduled here" << endl;
+            DEBUG("No more trace data for node " << node->getNodeID() <<
+                    ", no more churn scheduled here" << endl);
         }
     }
 
@@ -231,12 +232,12 @@ void ChurnController::scheduleChurn(DarknetChurnNode* node,
 void ChurnController::scheduleChurn(DarknetChurnNode* node,
         ChurnMessageType type, int time) {
     ChurnMessage* cmsg = new ChurnMessage(
-            (node->getNodeID() + " " + ChurnMessageTypeToString(type)).c_str());
+            CS(node->getNodeID() << " " << ChurnMessageTypeToString(type)));
 
-    cmsg->setType(type);
-    cmsg->setNode(node);
+            cmsg->setType(type);
+            cmsg->setNode(node);
 
-    EV<< "Scheduling churn type " << ChurnMessageTypeToString(type) << " on node " << node->getNodeID() << " in " << time << endl;
+            DEBUG("Scheduling churn type " << ChurnMessageTypeToString(type) << " on node " << node->getNodeID() << " in " << time << endl);
     scheduleAt(simTime() + time, cmsg);
     pendingChurnMessages.insert(cmsg);
 }

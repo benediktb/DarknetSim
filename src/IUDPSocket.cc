@@ -198,13 +198,8 @@ void IUDPSocket::joinLocalMulticastGroups()
     for (int i = 0; i < ift->getNumInterfaces(); ++i)
     {
         InterfaceEntry *ie = ift->getInterface(i);
-#ifdef WITH_IPv4
         if (ie->ipv4Data())
             numOfAddresses += ie->ipv4Data()->getJoinedMulticastGroups().size();
-#endif
-#ifdef WITH_IPv6
-        // TODO
-#endif
     }
 
     if (numOfAddresses > 0)
@@ -219,7 +214,6 @@ void IUDPSocket::joinLocalMulticastGroups()
         {
             InterfaceEntry *ie = ift->getInterface(i);
             int interfaceId = ie->getInterfaceId();
-#ifdef WITH_IPv4
             if (ie->ipv4Data())
             {
                 const IPv4InterfaceData::IPv4AddressVector &addresses = ie->ipv4Data()->getJoinedMulticastGroups();
@@ -229,10 +223,6 @@ void IUDPSocket::joinLocalMulticastGroups()
                     ctrl->setInterfaceId(k, interfaceId);
                 }
             }
-#endif
-#ifdef WITH_IPv6
-            // TODO
-#endif
         }
 
         cMessage *msg = new cMessage("JoinMulticastGroups", UDP_C_SETOPTION);
@@ -260,13 +250,8 @@ void IUDPSocket::leaveLocalMulticastGroups()
     for (int i = 0; i < ift->getNumInterfaces(); ++i)
     {
         InterfaceEntry *ie = ift->getInterface(i);
-#ifdef WITH_IPv4
         if (ie->ipv4Data())
             numOfAddresses += ie->ipv4Data()->getJoinedMulticastGroups().size();
-#endif
-#ifdef WITH_IPv6
-        // TODO
-#endif
     }
 
     if (numOfAddresses > 0)
@@ -279,7 +264,6 @@ void IUDPSocket::leaveLocalMulticastGroups()
         for (int i=0; i<ift->getNumInterfaces(); ++i)
         {
             InterfaceEntry *ie = ift->getInterface(i);
-#ifdef WITH_IPv4
             if (ie->ipv4Data())
             {
                 const IPv4InterfaceData::IPv4AddressVector &addresses = ie->ipv4Data()->getJoinedMulticastGroups();
@@ -288,10 +272,6 @@ void IUDPSocket::leaveLocalMulticastGroups()
                     ctrl->setMulticastAddr(k, addresses[j]);
                 }
             }
-#endif
-#ifdef WITH_IPv6
-            // TODO
-#endif
         }
 
         cMessage *msg = new cMessage("LeaveMulticastGroups", UDP_C_SETOPTION);

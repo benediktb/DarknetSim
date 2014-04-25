@@ -67,6 +67,7 @@ protected:
             const IPvXAddress& destAddr, int destPort);
     virtual void handleUDPMessage(cMessage* msg);
 
+    virtual simtime_t calcNextPingTime();
     virtual void markAsOffline();
 
     virtual bool startApp(IDoneCallback *doneCallback);

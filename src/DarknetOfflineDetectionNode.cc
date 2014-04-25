@@ -144,7 +144,9 @@ void DarknetOfflineDetectionNode::handleRcvAck(DarknetMessage* msg) {
 void DarknetOfflineDetectionNode::sendRcvAck(DarknetMessage* msg) {
     EV<< "Send RCVACK for message: " << msg->getType() << " (ID:" << msg->getId()
     << "/treeID: " << msg->getTreeId() << ")" << endl;
-    DarknetMessage* ack = new DarknetMessage();
+    std::stringstream nameStr;
+    nameStr << "RCVACK for " << DarknetMessage::typeToString(msg->getType()) << " #" << msg->getId();
+    DarknetMessage* ack = new DarknetMessage(nameStr.str().c_str());
     ack->setDestNodeID(msg->getSrcNodeID());
     ack->setType(DM_RCVACK);
     ack->setTTL(defaultTTL);
@@ -198,8 +200,9 @@ void DarknetOfflineDetectionNode::sendPacket(DarknetMessage* pkg,
         IPvXAddress& destAddr, int destPort) {
     // No ACKs for ACKs ... therefore no retransmissions. Also no ACKs for
     //   connection establishment
-    if ((pkg->getType() != DM_RCVACK) and (pkg->getType() != DM_CON_SYN) and
-            (pkg->getType() != DM_CON_SYNACK) and (pkg->getType() != DM_CON_ACK)) {
+    if ((pkg->getType() != DM_RCVACK) and (pkg->getType() != DM_CON_SYN)
+            and (pkg->getType() != DM_CON_SYNACK)
+            and (pkg->getType() != DM_CON_ACK)) {
         DarknetMessage* dup = pkg->dup();
 
         std::stringstream nameStr;

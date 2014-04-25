@@ -84,7 +84,7 @@ void DarknetChurnNode::handleDarknetMessage(DarknetMessage *msg,
         if (pmIt != pingMessages.end()) {
             PingMessage* pmsg = pingMessages.at(sender->nodeID);
             cancelEvent(pmsg);
-            scheduleAt(simTime() + pingFrequency, pmsg);
+            scheduleAt(calcNextPingTime(), pmsg);
         }
     }
 
@@ -120,13 +120,17 @@ void DarknetChurnNode::sendToUDP(DarknetMessage *msg, int srcPort,
     }
 }
 
+simtime_t DarknetChurnNode::calcNextPingTime() {
+    return simTime() + pingFrequency + uniform(-1, 1);
+}
+
 void DarknetChurnNode::addActivePeer(std::string nodeId) {
     DarknetOfflineDetectionNode::addActivePeer(nodeId);
     if (usePings) {
         PingMessage* pmsg = new PingMessage(("ping " + nodeId).c_str());
         pmsg->setPeerId(nodeId.c_str());
         pingMessages.insert(std::make_pair(nodeId, pmsg));
-        scheduleAt(simTime() + pingFrequency, pmsg);
+        scheduleAt(calcNextPingTime(), pmsg);
     }
 }
 

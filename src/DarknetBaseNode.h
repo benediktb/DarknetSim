@@ -54,6 +54,7 @@ public:
     }
 
     std::string getNodeID();
+    virtual void handleMessageWhenUp(cMessage *msg);
 
 protected:
 
@@ -103,7 +104,6 @@ protected:
     virtual IPv4Address getLocalIPv4Address();
 
     virtual void handleUDPMessage(cMessage* msg);
-    virtual void handleMessageWhenUp(cMessage *msg);
 
     // Things you probably want to implement or extend
     virtual void initialize(int stage);

@@ -14,83 +14,88 @@
 
 // Template rule which fires if a struct or class doesn't have operator<<
 template<typename T>
-std::ostream& operator<<(std::ostream& out, const T&) {
-    return out;
-}
+std::ostream& operator<<(std::ostream& out,const T&) {return out;}
 
 // Another default rule (prevents compiler from choosing base class' doPacking())
 template<typename T>
 void doPacking(cCommBuffer *, T& t) {
-    throw cRuntimeError(
-            "Parsim error: no doPacking() function for type %s or its base class (check .msg and _m.cc/h files!)",
-            opp_typename(typeid(t)));
+    throw cRuntimeError("Parsim error: no doPacking() function for type %s or its base class (check .msg and _m.cc/h files!)",opp_typename(typeid(t)));
 }
 
 template<typename T>
 void doUnpacking(cCommBuffer *, T& t) {
-    throw cRuntimeError(
-            "Parsim error: no doUnpacking() function for type %s or its base class (check .msg and _m.cc/h files!)",
-            opp_typename(typeid(t)));
+    throw cRuntimeError("Parsim error: no doUnpacking() function for type %s or its base class (check .msg and _m.cc/h files!)",opp_typename(typeid(t)));
 }
 
-Register_Class(ChurnMessage)
-;
 
-ChurnMessage::ChurnMessage(const char *name, int kind) :
-        cMessage(name, kind) {
+
+
+Register_Class(ChurnMessage);
+
+ChurnMessage::ChurnMessage(const char *name, int kind) : cMessage(name,kind)
+{
 }
 
-ChurnMessage::ChurnMessage(const ChurnMessage& other) :
-        cMessage(other) {
+ChurnMessage::ChurnMessage(const ChurnMessage& other) : cMessage(other)
+{
     copy(other);
 }
 
-ChurnMessage::~ChurnMessage() {
+ChurnMessage::~ChurnMessage()
+{
 }
 
-ChurnMessage& ChurnMessage::operator=(const ChurnMessage& other) {
-    if (this == &other)
-        return *this;
+ChurnMessage& ChurnMessage::operator=(const ChurnMessage& other)
+{
+    if (this==&other) return *this;
     cMessage::operator=(other);
     copy(other);
     return *this;
 }
 
-void ChurnMessage::copy(const ChurnMessage& other) {
+void ChurnMessage::copy(const ChurnMessage& other)
+{
     this->node_var = other.node_var;
     this->type_var = other.type_var;
 }
 
-void ChurnMessage::parsimPack(cCommBuffer *b) {
+void ChurnMessage::parsimPack(cCommBuffer *b)
+{
     cMessage::parsimPack(b);
-    doPacking(b, this->node_var);
-    doPacking(b, this->type_var);
+    doPacking(b,this->node_var);
+    doPacking(b,this->type_var);
 }
 
-void ChurnMessage::parsimUnpack(cCommBuffer *b) {
+void ChurnMessage::parsimUnpack(cCommBuffer *b)
+{
     cMessage::parsimUnpack(b);
-    doUnpacking(b, this->node_var);
-    doUnpacking(b, this->type_var);
+    doUnpacking(b,this->node_var);
+    doUnpacking(b,this->type_var);
 }
 
-NodePtr& ChurnMessage::getNode() {
+NodePtr& ChurnMessage::getNode()
+{
     return node_var;
 }
 
-void ChurnMessage::setNode(const NodePtr& node) {
+void ChurnMessage::setNode(const NodePtr& node)
+{
     this->node_var = node;
 }
 
-ChurnMessageType& ChurnMessage::getType() {
+ChurnMessageType& ChurnMessage::getType()
+{
     return type_var;
 }
 
-void ChurnMessage::setType(const ChurnMessageType& type) {
+void ChurnMessage::setType(const ChurnMessageType& type)
+{
     this->type_var = type;
 }
 
-class ChurnMessageDescriptor: public cClassDescriptor {
-public:
+class ChurnMessageDescriptor : public cClassDescriptor
+{
+  public:
     ChurnMessageDescriptor();
     virtual ~ChurnMessageDescriptor();
 
@@ -101,92 +106,99 @@ public:
     virtual int findField(void *object, const char *fieldName) const;
     virtual unsigned int getFieldTypeFlags(void *object, int field) const;
     virtual const char *getFieldTypeString(void *object, int field) const;
-    virtual const char *getFieldProperty(void *object, int field,
-            const char *propertyname) const;
+    virtual const char *getFieldProperty(void *object, int field, const char *propertyname) const;
     virtual int getArraySize(void *object, int field) const;
 
     virtual std::string getFieldAsString(void *object, int field, int i) const;
-    virtual bool setFieldAsString(void *object, int field, int i,
-            const char *value) const;
+    virtual bool setFieldAsString(void *object, int field, int i, const char *value) const;
 
     virtual const char *getFieldStructName(void *object, int field) const;
     virtual void *getFieldStructPointer(void *object, int field, int i) const;
 };
 
-Register_ClassDescriptor(ChurnMessageDescriptor)
-;
+Register_ClassDescriptor(ChurnMessageDescriptor);
 
-ChurnMessageDescriptor::ChurnMessageDescriptor() :
-        cClassDescriptor("ChurnMessage", "cMessage") {
+ChurnMessageDescriptor::ChurnMessageDescriptor() : cClassDescriptor("ChurnMessage", "cMessage")
+{
 }
 
-ChurnMessageDescriptor::~ChurnMessageDescriptor() {
+ChurnMessageDescriptor::~ChurnMessageDescriptor()
+{
 }
 
-bool ChurnMessageDescriptor::doesSupport(cObject *obj) const {
-    return dynamic_cast<ChurnMessage *>(obj) != NULL;
+bool ChurnMessageDescriptor::doesSupport(cObject *obj) const
+{
+    return dynamic_cast<ChurnMessage *>(obj)!=NULL;
 }
 
-const char *ChurnMessageDescriptor::getProperty(
-        const char *propertyname) const {
+const char *ChurnMessageDescriptor::getProperty(const char *propertyname) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? basedesc->getProperty(propertyname) : NULL;
 }
 
-int ChurnMessageDescriptor::getFieldCount(void *object) const {
+int ChurnMessageDescriptor::getFieldCount(void *object) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 2 + basedesc->getFieldCount(object) : 2;
+    return basedesc ? 2+basedesc->getFieldCount(object) : 2;
 }
 
-unsigned int ChurnMessageDescriptor::getFieldTypeFlags(void *object,
-        int field) const {
+unsigned int ChurnMessageDescriptor::getFieldTypeFlags(void *object, int field) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
         if (field < basedesc->getFieldCount(object))
             return basedesc->getFieldTypeFlags(object, field);
         field -= basedesc->getFieldCount(object);
     }
-    static unsigned int fieldTypeFlags[] = { FD_ISCOMPOUND, FD_ISCOMPOUND, };
-    return (field >= 0 && field < 2) ? fieldTypeFlags[field] : 0;
+    static unsigned int fieldTypeFlags[] = {
+        FD_ISCOMPOUND,
+        FD_ISCOMPOUND,
+    };
+    return (field>=0 && field<2) ? fieldTypeFlags[field] : 0;
 }
 
-const char *ChurnMessageDescriptor::getFieldName(void *object,
-        int field) const {
+const char *ChurnMessageDescriptor::getFieldName(void *object, int field) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
         if (field < basedesc->getFieldCount(object))
             return basedesc->getFieldName(object, field);
         field -= basedesc->getFieldCount(object);
     }
-    static const char *fieldNames[] = { "node", "type", };
-    return (field >= 0 && field < 2) ? fieldNames[field] : NULL;
+    static const char *fieldNames[] = {
+        "node",
+        "type",
+    };
+    return (field>=0 && field<2) ? fieldNames[field] : NULL;
 }
 
-int ChurnMessageDescriptor::findField(void *object,
-        const char *fieldName) const {
+int ChurnMessageDescriptor::findField(void *object, const char *fieldName) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
-    if (fieldName[0] == 'n' && strcmp(fieldName, "node") == 0)
-        return base + 0;
-    if (fieldName[0] == 't' && strcmp(fieldName, "type") == 0)
-        return base + 1;
+    if (fieldName[0]=='n' && strcmp(fieldName, "node")==0) return base+0;
+    if (fieldName[0]=='t' && strcmp(fieldName, "type")==0) return base+1;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
-const char *ChurnMessageDescriptor::getFieldTypeString(void *object,
-        int field) const {
+const char *ChurnMessageDescriptor::getFieldTypeString(void *object, int field) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
         if (field < basedesc->getFieldCount(object))
             return basedesc->getFieldTypeString(object, field);
         field -= basedesc->getFieldCount(object);
     }
-    static const char *fieldTypeStrings[] = { "NodePtr", "ChurnMessageType", };
-    return (field >= 0 && field < 2) ? fieldTypeStrings[field] : NULL;
+    static const char *fieldTypeStrings[] = {
+        "NodePtr",
+        "ChurnMessageType",
+    };
+    return (field>=0 && field<2) ? fieldTypeStrings[field] : NULL;
 }
 
-const char *ChurnMessageDescriptor::getFieldProperty(void *object, int field,
-        const char *propertyname) const {
+const char *ChurnMessageDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
         if (field < basedesc->getFieldCount(object))
@@ -194,99 +206,83 @@ const char *ChurnMessageDescriptor::getFieldProperty(void *object, int field,
         field -= basedesc->getFieldCount(object);
     }
     switch (field) {
-    default:
-        return NULL;
+        default: return NULL;
     }
 }
 
-int ChurnMessageDescriptor::getArraySize(void *object, int field) const {
+int ChurnMessageDescriptor::getArraySize(void *object, int field) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
         if (field < basedesc->getFieldCount(object))
             return basedesc->getArraySize(object, field);
         field -= basedesc->getFieldCount(object);
     }
-    ChurnMessage *pp = (ChurnMessage *) object;
-    (void) pp;
+    ChurnMessage *pp = (ChurnMessage *)object; (void)pp;
     switch (field) {
-    default:
-        return 0;
+        default: return 0;
     }
 }
 
-std::string ChurnMessageDescriptor::getFieldAsString(void *object, int field,
-        int i) const {
+std::string ChurnMessageDescriptor::getFieldAsString(void *object, int field, int i) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
         if (field < basedesc->getFieldCount(object))
-            return basedesc->getFieldAsString(object, field, i);
+            return basedesc->getFieldAsString(object,field,i);
         field -= basedesc->getFieldCount(object);
     }
-    ChurnMessage *pp = (ChurnMessage *) object;
-    (void) pp;
+    ChurnMessage *pp = (ChurnMessage *)object; (void)pp;
     switch (field) {
-    case 0: {
-        std::stringstream out;
-        out << pp->getNode();
-        return out.str();
-    }
-    case 1: {
-        std::stringstream out;
-        out << pp->getType();
-        return out.str();
-    }
-    default:
-        return "";
+        case 0: {std::stringstream out; out << pp->getNode(); return out.str();}
+        case 1: {std::stringstream out; out << pp->getType(); return out.str();}
+        default: return "";
     }
 }
 
-bool ChurnMessageDescriptor::setFieldAsString(void *object, int field, int i,
-        const char *value) const {
+bool ChurnMessageDescriptor::setFieldAsString(void *object, int field, int i, const char *value) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
         if (field < basedesc->getFieldCount(object))
-            return basedesc->setFieldAsString(object, field, i, value);
+            return basedesc->setFieldAsString(object,field,i,value);
         field -= basedesc->getFieldCount(object);
     }
-    ChurnMessage *pp = (ChurnMessage *) object;
-    (void) pp;
+    ChurnMessage *pp = (ChurnMessage *)object; (void)pp;
     switch (field) {
-    default:
-        return false;
+        default: return false;
     }
 }
 
-const char *ChurnMessageDescriptor::getFieldStructName(void *object,
-        int field) const {
+const char *ChurnMessageDescriptor::getFieldStructName(void *object, int field) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
         if (field < basedesc->getFieldCount(object))
             return basedesc->getFieldStructName(object, field);
         field -= basedesc->getFieldCount(object);
     }
-    static const char *fieldStructNames[] = { "NodePtr", "ChurnMessageType", };
-    return (field >= 0 && field < 2) ? fieldStructNames[field] : NULL;
+    static const char *fieldStructNames[] = {
+        "NodePtr",
+        "ChurnMessageType",
+    };
+    return (field>=0 && field<2) ? fieldStructNames[field] : NULL;
 }
 
-void *ChurnMessageDescriptor::getFieldStructPointer(void *object, int field,
-        int i) const {
+void *ChurnMessageDescriptor::getFieldStructPointer(void *object, int field, int i) const
+{
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
         if (field < basedesc->getFieldCount(object))
             return basedesc->getFieldStructPointer(object, field, i);
         field -= basedesc->getFieldCount(object);
     }
-    ChurnMessage *pp = (ChurnMessage *) object;
-    (void) pp;
+    ChurnMessage *pp = (ChurnMessage *)object; (void)pp;
     switch (field) {
-    case 0:
-        return (void *) (&pp->getNode());
-        break;
-    case 1:
-        return (void *) (&pp->getType());
-        break;
-    default:
-        return NULL;
+        case 0: return (void *)(&pp->getNode()); break;
+        case 1: return (void *)(&pp->getType()); break;
+        default: return NULL;
     }
 }
+
 

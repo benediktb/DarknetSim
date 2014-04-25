@@ -307,6 +307,12 @@ DarknetMessage* DarknetBaseNode::makeRequest(std::string nodeID) {
 }
 
 void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {
+    Enter_Method_Silent
+    ();
+
+    // Make sure its our message
+    take(msg);
+
     if (msg->isSelfMessage()) {
         handleSelfMessage(msg);
     } else if (msg->getKind() == UDP_I_DATA) {

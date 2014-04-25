@@ -134,10 +134,14 @@ void DarknetOfflineDetectionNode::handleRcvAck(DarknetMessage* msg) {
             rcvack_waiting.find(orig_mID);
     if (ackIt != rcvack_waiting.end()) {
         DarknetMessage* msgPendingAck = ackIt->second.first;
+
+#ifdef USE_DEBUG
         DarknetMessageType type = msgPendingAck->getType();
         long msgId = msgPendingAck->getId();
         DEBUG(
                 "Received RCVACK for message: " << type << " (id:" << msgId << ")" << endl);
+#endif
+
         cancelAndDelete(msgPendingAck);
         rcvack_waiting.erase(orig_mID);
     }

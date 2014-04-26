@@ -46,6 +46,10 @@ typedef struct {
     std::string destId;
 } seenPacket;
 
+#define DARKNET_MESSAGE_ISEXTERNAL "darknet_msg_is_external"
+#define DARKNET_MESSAGE_EXTERNAL_CALLBACK "darknet_msg_external_callback"
+typedef void (*ExternalMessageCallback)(cMessage*);
+
 class DarknetBaseNode: public AppBase {
 public:
     DarknetBaseNode() :
@@ -57,7 +61,8 @@ public:
 
     std::string getNodeID();
 
-    virtual void handleExternalMessage(cMessage *msg);
+    virtual void handleExternalMessage(cMessage *msg, simtime_t& when,
+            ExternalMessageCallback callbackMethod);
 
 protected:
 

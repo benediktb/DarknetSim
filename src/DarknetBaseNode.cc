@@ -304,16 +304,42 @@ DarknetMessage* DarknetBaseNode::makeRequest(std::string nodeID) {
     return makeRequest(msg, nodeID);
 }
 
-void DarknetBaseNode::handleExternalMessage(cMessage *msg) {
-    Enter_Method
-    ("Received message %s", msg->getName());
+void DarknetBaseNode::handleExternalMessage(cMessage *msg, simtime_t& when,
+        ExternalMessageCallback callbackMethod) {
+    Enter_Method_Silent
+    ();
 
     take(msg);
 
-    handleMessageWhenUp(msg);
+    msg->addPar(DARKNET_MESSAGE_ISEXTERNAL);
+    msg->par(DARKNET_MESSAGE_ISEXTERNAL).setBoolValue(true);
+    msg->addPar(DARKNET_MESSAGE_EXTERNAL_CALLBACK);
+    msg->par(DARKNET_MESSAGE_EXTERNAL_CALLBACK).setPointerValue(
+            (void*) callbackMethod);
+
+    // Re-Schedule message for arrival, so it will be marked as an event in this
+    //   node, not where it came from
+    scheduleAt(when, msg);
 }
 
 void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {
+    // When the message was transmitted directly via handleExternalMessage(),
+    //   clean up the message to make it look as it arrived normally
+    if (msg->hasPar(DARKNET_MESSAGE_ISEXTERNAL)
+            and (msg->par(DARKNET_MESSAGE_ISEXTERNAL).boolValue())) {
+        msg->par(DARKNET_MESSAGE_ISEXTERNAL).setBoolValue(false);
+        // Set arrival data, esp. to reset self message property (== in gate -1)
+        msg->setArrival(this, gateBaseId("udpIn"));
+
+        // Inform the sender that message arrived
+        ExternalMessageCallback callback = (ExternalMessageCallback) msg->par(
+                DARKNET_MESSAGE_EXTERNAL_CALLBACK).pointerValue();
+        if (callback != NULL) {
+            callback(msg);
+        }
+        msg->par(DARKNET_MESSAGE_EXTERNAL_CALLBACK).setPointerValue(NULL);
+    }
+
     if (msg->isSelfMessage()) {
         handleSelfMessage(msg);
     } else if (msg->getKind() == UDP_I_DATA) {

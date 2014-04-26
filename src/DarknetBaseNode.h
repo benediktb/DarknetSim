@@ -48,14 +48,16 @@ typedef struct {
 
 class DarknetBaseNode: public AppBase {
 public:
-    DarknetBaseNode(): socket(NULL) {
+    DarknetBaseNode() :
+            socket(NULL) {
     }
     virtual ~DarknetBaseNode() {
         delete socket;
     }
 
     std::string getNodeID();
-    virtual void handleMessageWhenUp(cMessage *msg);
+
+    virtual void handleExternalMessage(cMessage *msg);
 
 protected:
 
@@ -104,6 +106,7 @@ protected:
             const IPvXAddress& destAddr, int destPort);
     virtual IPv4Address getLocalIPv4Address();
 
+    virtual void handleMessageWhenUp(cMessage *msg);
     virtual void handleUDPMessage(cMessage* msg);
 
     // Things you probably want to implement or extend

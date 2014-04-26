@@ -186,9 +186,7 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
         typedef std::map<IPvXAddress, DarknetPeer*>::iterator it_type;
         it_type it = friendsByAddress.find(udi->getSrcAddr());
         if (friendsByAddress.end() == it) {
-            DEBUG("Could not get sending peer for message: " << msg << endl);
-            DEBUG("  + Source address: " << udi->getSrcAddr().str() << ":" << udi->getSrcPort() << endl);
-            DEBUG("  + Content of address -> peer map: " << endl);
+            DEBUG("Could not get sending peer for message: " << msg << endl);DEBUG("  + Source address: " << udi->getSrcAddr().str() << ":" << udi->getSrcPort() << endl);DEBUG("  + Content of address -> peer map: " << endl);
             for (it_type iterator = friendsByAddress.begin();
                     iterator != friendsByAddress.end(); iterator++) {
                 DEBUG("    " << iterator->first.str() << " -> " << iterator->second->nodeID << endl);
@@ -306,13 +304,16 @@ DarknetMessage* DarknetBaseNode::makeRequest(std::string nodeID) {
     return makeRequest(msg, nodeID);
 }
 
-void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {
-    Enter_Method_Silent
-    ();
+void DarknetBaseNode::handleExternalMessage(cMessage *msg) {
+    Enter_Method
+    ("Received message %s", msg->getName());
 
-    // Make sure its our message
     take(msg);
 
+    handleMessageWhenUp(msg);
+}
+
+void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {
     if (msg->isSelfMessage()) {
         handleSelfMessage(msg);
     } else if (msg->getKind() == UDP_I_DATA) {
@@ -324,6 +325,5 @@ void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {
         error("Unrecognized message (%s)%s", msg->getClassName(),
                 msg->getName());
     }
-
 }
 

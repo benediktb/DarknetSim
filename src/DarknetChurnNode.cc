@@ -136,7 +136,8 @@ void DarknetChurnNode::addActivePeer(std::string nodeId) {
 
 void DarknetChurnNode::removeInactivePeer(std::string peerId) {
     if (usePings) {
-        std::map<std::string, PingMessage*>::iterator pmIt = pingMessages.find(peerId);
+        std::map<std::string, PingMessage*>::iterator pmIt = pingMessages.find(
+                peerId);
         if (pmIt != pingMessages.end()) {
             cancelAndDelete(pmIt->second);
             pingMessages.erase(peerId);

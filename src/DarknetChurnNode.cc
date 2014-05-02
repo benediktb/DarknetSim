@@ -211,6 +211,20 @@ bool DarknetChurnNode::crashApp(IDoneCallback *doneCallback) {
     return true;
 }
 
+void DarknetChurnNode::handleExternalMessage(cMessage *msg, simtime_t& when,
+        ExternalMessageCallback callbackMethod) {
+    Enter_Method_Silent
+    ();
+
+    if (isOnline) {
+        DarknetOfflineDetectionNode::handleExternalMessage(msg, when,
+                callbackMethod);
+    } else {
+        take(msg);
+        delete msg;
+    }
+}
+
 /**
  * Chooses random next hop.
  */

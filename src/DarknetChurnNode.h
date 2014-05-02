@@ -100,6 +100,8 @@ public:
     }
     ;
 
+    virtual void handleExternalMessage(cMessage *msg, simtime_t& when,
+            ExternalMessageCallback callbackMethod);
 };
 
 #endif /* DARKNETCHURNNODE_H_ */

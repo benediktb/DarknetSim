@@ -61,12 +61,9 @@ void DarknetBaseNode::initialize(int stage) {
     switch (stage) {
     case 0:
         localPort = par("localPort");
-        socket = getSocket();
-        socket->setOutputGate(gate("udpOut"));
-        socket->bind(localPort);
-
         nodeID = par("nodeID").stdstringValue();
         defaultTTL = par("defaultTTL");
+
         sigSendDM = registerSignal("sigSendDM");
         sigUnhandledMSG = registerSignal("sigUnhandledMSG");
         sigDropTtlExeeded = registerSignal("sigDropTtlExeeded");
@@ -74,6 +71,10 @@ void DarknetBaseNode::initialize(int stage) {
         sigResponseRemainingTTL = registerSignal("sigResponseRemainingTTL");
         break;
     case 3: {
+        socket = getSocket();
+        socket->setOutputGate(gate("udpOut"));
+        socket->bind(localPort);
+
         std::vector<std::string> v =
                 cStringTokenizer(par("friends")).asVector();
 
@@ -95,7 +96,8 @@ void DarknetBaseNode::initialize(int stage) {
                     error("No friend loops allowed! Check network topology.");
                 }
             } else {
-                DEBUG("Error on parsing peer list; this peer seems malformed: " << (*iter) << endl);
+                DEBUG(
+                        "Error on parsing peer list; this peer seems malformed: " << (*iter) << endl);
             }
         }
     }
@@ -103,7 +105,7 @@ void DarknetBaseNode::initialize(int stage) {
         break;
     }
 
-    AppBase::initialize(stage);
+    AppBase::initialize(stage - 1);
 }
 
 void DarknetBaseNode::connectAllFriends() {
@@ -115,7 +117,9 @@ void DarknetBaseNode::connectAllFriends() {
 
 void DarknetBaseNode::sendToUDP(DarknetMessage *msg, int srcPort,
         const IPvXAddress& destAddr, int destPort) {
-    DEBUG("Sending UDP packet: " << getLocalIPv4Address() << " to ");DEBUG(destAddr << ":" << destPort << ", content: ");DEBUG(msg->toString() << " (" << msg->getByteLength() << " bytes)" << endl);
+    DEBUG("Sending UDP packet: " << getLocalIPv4Address() << " to ");
+    DEBUG(destAddr << ":" << destPort << ", content: ");
+    DEBUG(msg->toString() << " (" << msg->getByteLength() << " bytes)" << endl);
 
     socket->sendTo(msg, destAddr, destPort);
 }
@@ -137,7 +141,8 @@ bool DarknetBaseNode::sendDirectMessage(DarknetMessage* msg) {
         sendPacket(msg, peer->address.first, peer->address.second);
         return true;
     } else { //destination node not in peers list -> not possible to send direct message
-        DEBUG("destination node(" << msg->getDestNodeID() << " not in peers list -> not possible to send direct message: " << msg << endl);
+        DEBUG(
+                "destination node(" << msg->getDestNodeID() << " not in peers list -> not possible to send direct message: " << msg << endl);
         return false;
     }
 }
@@ -186,16 +191,21 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
         typedef std::map<IPvXAddress, DarknetPeer*>::iterator it_type;
         it_type it = friendsByAddress.find(udi->getSrcAddr());
         if (friendsByAddress.end() == it) {
-            DEBUG("Could not get sending peer for message: " << msg << endl);DEBUG("  + Source address: " << udi->getSrcAddr().str() << ":" << udi->getSrcPort() << endl);DEBUG("  + Content of address -> peer map: " << endl);
+            DEBUG("Could not get sending peer for message: " << msg << endl);
+            DEBUG(
+                    "  + Source address: " << udi->getSrcAddr().str() << ":" << udi->getSrcPort() << endl);
+            DEBUG("  + Content of address -> peer map: " << endl);
             for (it_type iterator = friendsByAddress.begin();
                     iterator != friendsByAddress.end(); iterator++) {
-                DEBUG("    " << iterator->first.str() << " -> " << iterator->second->nodeID << endl);
+                DEBUG(
+                        "    " << iterator->first.str() << " -> " << iterator->second->nodeID << endl);
             }
             delete msg;
             return;
         }
         DarknetPeer* sender = it->second;
-        DEBUG("Received DarknetMessage at " << getLocalIPv4Address() << " from " << sender->address.first << ", peer " << sender->nodeID << endl);
+        DEBUG(
+                "Received DarknetMessage at " << getLocalIPv4Address() << " from " << sender->address.first << ", peer " << sender->nodeID << endl);
         handleDarknetMessage(dm, sender);
     } else {
         DEBUG("received an unknown cMessage: " << msg << endl);

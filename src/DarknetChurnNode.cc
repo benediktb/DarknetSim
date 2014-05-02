@@ -212,13 +212,12 @@ bool DarknetChurnNode::crashApp(IDoneCallback *doneCallback) {
 }
 
 void DarknetChurnNode::handleExternalMessage(cMessage *msg, simtime_t& when,
-        ExternalMessageCallback callbackMethod) {
+        MessageCallback* callback) {
     Enter_Method_Silent
     ();
 
     if (isOnline) {
-        DarknetOfflineDetectionNode::handleExternalMessage(msg, when,
-                callbackMethod);
+        DarknetOfflineDetectionNode::handleExternalMessage(msg, when, callback);
     } else {
         take(msg);
         delete msg;

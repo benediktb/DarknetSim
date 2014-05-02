@@ -305,7 +305,7 @@ DarknetMessage* DarknetBaseNode::makeRequest(std::string nodeID) {
 }
 
 void DarknetBaseNode::handleExternalMessage(cMessage *msg, simtime_t& when,
-        ExternalMessageCallback callbackMethod) {
+        MessageCallback* callback = NULL) {
     Enter_Method_Silent
     ();
 
@@ -315,7 +315,7 @@ void DarknetBaseNode::handleExternalMessage(cMessage *msg, simtime_t& when,
     msg->par(DARKNET_MESSAGE_ISEXTERNAL).setBoolValue(true);
     msg->addPar(DARKNET_MESSAGE_EXTERNAL_CALLBACK);
     msg->par(DARKNET_MESSAGE_EXTERNAL_CALLBACK).setPointerValue(
-            (void*) callbackMethod);
+            (void*) callback);
 
     // Re-Schedule message for arrival, so it will be marked as an event in this
     //   node, not where it came from
@@ -332,10 +332,10 @@ void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {
         msg->setArrival(this, gateBaseId("udpIn"));
 
         // Inform the sender that message arrived
-        ExternalMessageCallback callback = (ExternalMessageCallback) msg->par(
+        MessageCallback* callback = (MessageCallback*) msg->par(
                 DARKNET_MESSAGE_EXTERNAL_CALLBACK).pointerValue();
         if (callback != NULL) {
-            callback(msg);
+            callback->callForMessage(msg);
         }
         msg->par(DARKNET_MESSAGE_EXTERNAL_CALLBACK).setPointerValue(NULL);
     }

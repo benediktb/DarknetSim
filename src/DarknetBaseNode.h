@@ -21,6 +21,7 @@
 #include <IPvXAddress.h>
 #include <IUDPSocket.h>
 #include "darknetmessage.h"
+#include "MessageCallback.h"
 #include "./Debug.h"
 
 typedef std::pair<IPvXAddress, int> UDPAddress;
@@ -48,7 +49,6 @@ typedef struct {
 
 #define DARKNET_MESSAGE_ISEXTERNAL "darknet_msg_is_external"
 #define DARKNET_MESSAGE_EXTERNAL_CALLBACK "darknet_msg_external_callback"
-typedef void (*ExternalMessageCallback)(cMessage*);
 
 class DarknetBaseNode: public AppBase {
 public:
@@ -62,7 +62,7 @@ public:
     std::string getNodeID();
 
     virtual void handleExternalMessage(cMessage *msg, simtime_t& when,
-            ExternalMessageCallback callbackMethod);
+            MessageCallback* callback);
 
 protected:
 

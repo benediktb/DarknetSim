@@ -127,10 +127,12 @@ void ChurnController::doStartup(DarknetChurnNode* node) {
     }
 
     if (!node->startState) {
-        DEBUG("Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl);
+        DEBUG(
+                "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl);
         scheduleChurn(node, CHURN_GO_ON, node->offTimeDistribution);
     } else {
-        DEBUG("Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl);
+        DEBUG(
+                "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl);
         scheduleChurn(node, CHURN_GO_OFF, node->onTimeDistribution);
     }
 }
@@ -152,18 +154,20 @@ void ChurnController::doStartupWithTraces(DarknetChurnNode* node) {
     int nextSwitchTime = getNextTraceSwitchTime(trace);
 
     if (nextSwitchTime == -1) {
-        DEBUG("Node " << node->getNodeID() << " is OFF at the start, won't go on at all " <<
-                "-OR- trace for this node is missing" << endl);
+        DEBUG(
+                "Node " << node->getNodeID() << " is OFF at the start, won't go on at all " << "-OR- trace for this node is missing" << endl);
         node->startState = false;
         return;
     }
 
     node->startState = trace->startState;
     if (!trace->startState) {
-        DEBUG("Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl);
+        DEBUG(
+                "Node " << node->getNodeID() << " is OFF at the start, scheduling ON" << endl);
         scheduleChurn(node, CHURN_GO_ON, nextSwitchTime);
     } else {
-        DEBUG("Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl);
+        DEBUG(
+                "Node " << node->getNodeID() << " is ON at the start, scheduling OFF" << endl);
         scheduleChurn(node, CHURN_GO_OFF, nextSwitchTime);
     }
 }
@@ -194,8 +198,8 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
         nextSwitchTime = getNextTraceSwitchTime(trace);
 
         if (nextSwitchTime == -1) {
-            DEBUG("No more trace data for node " << node->getNodeID() <<
-                    ", no more churn scheduled here" << endl);
+            DEBUG(
+                    "No more trace data for node " << node->getNodeID() << ", no more churn scheduled here" << endl);
         }
     }
 
@@ -205,7 +209,7 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
         if (!useTraces) {
             scheduleChurn(node, CHURN_GO_OFF, node->onTimeDistribution);
         } else if (nextSwitchTime > -1) {
-            scheduleChurn(node, CHURN_GO_OFF, nextSwitchTime);
+            scheduleChurn(node, CHURN_GO_OFF, (double) nextSwitchTime);
         }
     } else {
         node->churnGoOffline();
@@ -213,7 +217,7 @@ void ChurnController::handleChurnMessage(ChurnMessage* cmsg) {
         if (!useTraces) {
             scheduleChurn(node, CHURN_GO_ON, node->offTimeDistribution);
         } else if (nextSwitchTime > -1) {
-            scheduleChurn(node, CHURN_GO_ON, nextSwitchTime);
+            scheduleChurn(node, CHURN_GO_ON, (double) nextSwitchTime);
         }
     }
 
@@ -225,19 +229,36 @@ void ChurnController::scheduleChurn(DarknetChurnNode* node,
         ChurnMessageType type, IRandomDistribution* distribution) {
     // Distribution result is in minutes, we schedule for seconds
     // Don't allow for 0 sec of ON/OFF time, minimum is 1 sec
-    int nextChurnTime = (int) (distribution->getNext() * 60.0) + 1;
+    double nextChurnTime = (distribution->getNext() * 60.0) + 1.0;
     scheduleChurn(node, type, nextChurnTime);
 }
 
 void ChurnController::scheduleChurn(DarknetChurnNode* node,
-        ChurnMessageType type, int time) {
+        ChurnMessageType type, double time) {
     ChurnMessage* cmsg = new ChurnMessage(
             CS(node->getNodeID() << " " << ChurnMessageTypeToString(type)));
+
+            // blame the OMNeT code formatter for this indentation!
 
             cmsg->setType(type);
             cmsg->setNode(node);
 
-            DEBUG("Scheduling churn type " << ChurnMessageTypeToString(type) << " on node " << node->getNodeID() << " in " << time << endl);
-    scheduleAt(simTime() + time, cmsg);
+            // Allow max. churn time of 604800 sec == 1 week
+            double limitedTime = std::min(time, 604800.0);
+
+            // Make sure there is no overflow (of any kind)
+            double curTimeD = simTime().dbl();
+            double targetTime = curTimeD + limitedTime;
+            double maxTime = SimTime::getMaxTime().dbl();
+            if ((targetTime < curTimeD) or (targetTime >= maxTime)) {
+                // If we are that close ... well, let it crash.
+                double maxDelta = std::max(maxTime - curTimeD, 1.0);
+                targetTime = curTimeD + 0.5 * maxDelta;
+            }
+            simtime_t scheduleTime = SimTime(targetTime);
+
+            DEBUG(
+                    "Scheduling churn type " << ChurnMessageTypeToString(type) << " on node " << node->getNodeID() << " in " << targetTime << endl);
+    scheduleAt(scheduleTime, cmsg);
     pendingChurnMessages.insert(cmsg);
 }

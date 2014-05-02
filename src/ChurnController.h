@@ -68,7 +68,7 @@ protected:
     virtual void scheduleChurn(DarknetChurnNode* node, ChurnMessageType type,
             IRandomDistribution* distribution);
     virtual void scheduleChurn(DarknetChurnNode* node, ChurnMessageType type,
-            int time);
+            double time);
 
 public:
     ChurnController() :

@@ -99,9 +99,6 @@ public:
         delete offTimeDistribution;
     }
     ;
-
-    virtual void handleExternalMessage(cMessage *msg, simtime_t& when,
-            MessageCallback *callback);
 };
 
 #endif /* DARKNETCHURNNODE_H_ */

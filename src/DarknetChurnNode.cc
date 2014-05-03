@@ -215,16 +215,25 @@ bool DarknetChurnNode::crashApp(IDoneCallback *doneCallback) {
  * Chooses random next hop.
  */
 std::vector<DarknetPeer*> DarknetChurnNode::findNextHop(DarknetMessage* msg) {
-    int nextHopIndex = intuniform(0, connected.size() - 1);
-    std::vector<DarknetPeer*> list;
-    int i = 0;
-    for (std::set<std::string>::iterator it = connected.begin();
-            it != connected.end(); it++) {
-        if (i == nextHopIndex) {
-            list.push_back(friendsByID[*it]);
-            break;
+    DarknetPeer* hop = NULL;
+    if (numConnected > 0L) {
+        int nextHopIndex = intuniform(0, numConnected - 1);
+        int i = 0;
+        for (std::map<std::string, DarknetPeer*>::iterator it = friendsByID.begin();
+                it != friendsByID.end(); it++) {
+            if (it->second->connected) {
+                if (i == nextHopIndex) {
+                    hop = it->second;
+                    break;
+                }
+                i++;
+            }
         }
-        i++;
+    }
+
+    std::vector<DarknetPeer*> list;
+    if (hop != NULL) {
+        list.push_back(hop);
     }
     return list;
 }

@@ -35,11 +35,14 @@ void DarknetSimpleNode::initialize(int stage) {
 }
 
 void DarknetSimpleNode::connectPeer(std::string nodeID) {
-    if (connected.count(nodeID) == 0) {
-        connected.insert(nodeID);
+    DarknetPeer* peer = friendsByID.at(nodeID);
+    if (not peer->connected) {
+        peer->connected = true;
+        // TODO: num connected?!
     }
 }
-;
+
+// TODO: Missing disconnectPeer or similar?
 
 void DarknetSimpleNode::handleSelfMessage(cMessage *msg) {
     if (dynamic_cast<PingTimer*>(msg) != NULL) {

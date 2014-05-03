@@ -30,6 +30,7 @@ typedef struct DarknetPeer DarknetPeer;
 struct DarknetPeer {
     std::string nodeID;
     UDPAddress address;
+    bool connected;
     bool operator<(const DarknetPeer& other) const {
         return address < other.address;
     }
@@ -75,8 +76,8 @@ protected:
     std::map<std::string, DarknetPeer*> friendsByID;
     std::map<IPvXAddress, DarknetPeer*> friendsByAddress;
 
-    /** To be filled by connectPeer(): Set of all currently connected friends */
-    std::set<std::string> connected;
+    /** Number of currently connected peers */
+    long numConnected;
 
     /** Map for forwarded MessageIDs -> source nodeID */
     std::map<long, std::string> forwardedIdTable;

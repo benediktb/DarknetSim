@@ -70,7 +70,8 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
         DarknetPeer *sender) {
     switch (msg->getType()) {
     case DM_CON_SYN: {
-        if (friendsByID.find(msg->getSrcNodeID()) != friendsByID.end()) {
+        std::map<std::string, DarknetPeer*>::iterator frIt = friendsByID.find(msg->getSrcNodeID());
+        if (frIt != friendsByID.end()) {
             DEBUG("Received CON_SYN from: " << msg->getSrcNodeID() << endl);
             DarknetMessage *ack = new DarknetMessage("CON_SYNACK");
             ack->setType(DM_CON_SYNACK);
@@ -82,14 +83,15 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
         break;
     }
     case DM_CON_SYNACK: {
-        if (friendsByID.find(msg->getSrcNodeID()) != friendsByID.end()) {
+        std::map<std::string, DarknetPeer*>::iterator frIt = friendsByID.find(msg->getSrcNodeID());
+        if (frIt != friendsByID.end()) {
             DEBUG("Received CON_SYNACK from: " << msg->getSrcNodeID() << endl);
             DarknetMessage *ack = new DarknetMessage("CON_ACK");
             ack->setType(DM_CON_ACK);
             ack->setTTL(defaultTTL);
             ack->setDestNodeID(msg->getSrcNodeID());
             sendDirectMessage(ack);
-            if (connected.find(msg->getSrcNodeID()) == connected.end()) {
+            if (not frIt->second->connected) {
                 addActivePeer(msg->getSrcNodeID());
             }
         }
@@ -97,7 +99,8 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
         break;
     }
     case DM_CON_ACK: {
-        if (connected.find(msg->getSrcNodeID()) == connected.end()) {
+        std::map<std::string, DarknetPeer*>::iterator frIt = friendsByID.find(msg->getSrcNodeID());
+        if (not frIt->second->connected) {
             addActivePeer(msg->getSrcNodeID());
         }
         delete msg;
@@ -110,7 +113,8 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
 }
 
 void DarknetOfflineDetectionNode::addActivePeer(std::string nodeId) {
-    connected.insert(nodeId);
+    friendsByID.at(nodeId)->connected = true;
+    numConnected++;
     DEBUG("Connection to " << nodeId << " established" << endl);
 }
 
@@ -160,7 +164,8 @@ void DarknetOfflineDetectionNode::sendRcvAck(DarknetMessage* msg) {
 }
 
 void DarknetOfflineDetectionNode::removeInactivePeer(std::string peerId) {
-    connected.erase(peerId);
+    friendsByID.at(peerId)->connected = false;
+    numConnected--;
 }
 
 /*

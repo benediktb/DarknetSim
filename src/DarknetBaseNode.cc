@@ -36,7 +36,11 @@ bool DarknetBaseNode::stopApp(IDoneCallback *doneCallback) {
 }
 
 bool DarknetBaseNode::crashApp(IDoneCallback *doneCallback) {
-    connected.clear();
+    std::map<std::string, DarknetPeer*>::iterator cnIt;
+    for (cnIt = friendsByID.begin(); cnIt != friendsByID.end(); cnIt++) {
+        cnIt->second->connected = false;
+    }
+    numConnected = 0L;
     forwardedIdTable.clear();
     outstandingResponses.clear();
     return true;
@@ -48,9 +52,9 @@ void DarknetBaseNode::addPeer(std::string nodeID, IPvXAddress& destAddr,
     UDPAddress* address = new UDPAddress(destAddr, destPort);
     peer->nodeID = nodeID;
     peer->address = *address;
-    friendsByID.insert(std::pair<std::string, DarknetPeer*>(nodeID, peer));
-    friendsByAddress.insert(
-            std::pair<IPvXAddress, DarknetPeer*>(destAddr, peer));
+    peer->connected = false;
+    friendsByID.insert(std::make_pair(nodeID, peer));
+    friendsByAddress.insert(std::make_pair(destAddr, peer));
 }
 
 IUDPSocket* DarknetBaseNode::getSocket() {
@@ -63,6 +67,8 @@ void DarknetBaseNode::initialize(int stage) {
         localPort = par("localPort");
         nodeID = par("nodeID").stdstringValue();
         defaultTTL = par("defaultTTL");
+
+        numConnected = 0L;
 
         sigSendDM = registerSignal("sigSendDM");
         sigUnhandledMSG = registerSignal("sigUnhandledMSG");

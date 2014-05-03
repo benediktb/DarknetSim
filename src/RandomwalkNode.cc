@@ -28,17 +28,26 @@ void RandomwalkNode::initialize(int stage) {
 }
 
 std::vector<DarknetPeer*> RandomwalkNode::findNextHop(DarknetMessage* msg) {
-    if (!connected.size()) { // peer list empty -> raise exception?
+    if (numConnected == 0) { // peer list empty -> raise exception?
         EV<< "ERROR: empty peer list!";
         return std::vector<DarknetPeer*>(0);
     }
-    if(connected.count(msg->getDestNodeID()) == 1 and friendsByID.count(msg->getDestNodeID()) == 1) {
-        return std::vector<DarknetPeer*>(1,friendsByID[msg->getDestNodeID()]);
+    std::map<std::string, DarknetPeer*>::iterator frIt = friendsByID.find(msg->getDestNodeID());
+    if ((frIt != friendsByID.end()) and (frIt->second->connected)) {
+        return std::vector<DarknetPeer*>(1, frIt->second);
     } else {
-        std::set<std::string>::iterator iter = connected.begin();
-        std::advance(iter, dblrand() * connected.size());
-        return std::vector<DarknetPeer*>(1,friendsByID[*iter]);
+        int randomPeerPos = intuniform(0, numConnected - 1);
+        int pos = 0;
+        for (frIt = friendsByID.begin(); frIt != friendsByID.end(); frIt++) {
+            if (frIt->second->connected) {
+                if (pos == randomPeerPos) {
+                    return std::vector<DarknetPeer*>(1, frIt->second);
+                }
+                pos++;
+            }
+        }
     }
+    return std::vector<DarknetPeer*>(0);
 }
 
         /*

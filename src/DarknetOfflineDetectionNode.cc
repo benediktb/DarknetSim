@@ -116,9 +116,12 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
 }
 
 void DarknetOfflineDetectionNode::addActivePeer(std::string nodeId) {
-    friendsByID.at(nodeId)->connected = true;
-    numConnected++;
-    DEBUG("Connection to " << nodeId << " established" << endl);
+    DarknetPeer* peer = friendsByID.at(peerId);
+    if (not peer->connected) {
+        peer->connected = true;
+        numConnected++;
+        DEBUG("Connection to " << nodeId << " established" << endl);
+    }
 }
 
 /*
@@ -168,8 +171,11 @@ void DarknetOfflineDetectionNode::sendRcvAck(DarknetMessage* msg) {
 }
 
 void DarknetOfflineDetectionNode::removeInactivePeer(std::string peerId) {
-    friendsByID.at(peerId)->connected = false;
-    numConnected--;
+    DarknetPeer* peer = friendsByID.at(peerId);
+    if (peer->connected) {
+        peer->connected = false;
+        numConnected--;
+    }
 }
 
 /*

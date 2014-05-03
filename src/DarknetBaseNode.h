@@ -58,6 +58,12 @@ public:
     }
     virtual ~DarknetBaseNode() {
         delete socket;
+
+        std::map<std::string, DarknetPeer*>::iterator frIt;
+        for (frIt = friendsByID.begin(); frIt != friendsByID.end(); frIt++) {
+            delete frIt->second;
+        }
+        friendsByID.clear();
     }
 
     std::string getNodeID();

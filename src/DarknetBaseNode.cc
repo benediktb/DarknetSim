@@ -207,6 +207,7 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
                         "    " << iterator->first.str() << " -> " << iterator->second->nodeID << endl);
             }
             delete msg;
+            msg = NULL;
             return;
         }
         DarknetPeer* sender = it->second;
@@ -216,6 +217,7 @@ void DarknetBaseNode::handleUDPMessage(cMessage *msg) {
     } else {
         DEBUG("received an unknown cMessage: " << msg << endl);
         delete msg;
+        msg = NULL;
     }
 }
 
@@ -249,14 +251,17 @@ void DarknetBaseNode::handleIncomingMessage(DarknetMessage *msg,
         emit(sigResponseRemainingTTL, msg->getTTL());
         outstandingResponses.erase(msg->getRequestMessageID());
         delete msg;
+        msg = NULL;
         break;
     case DM_OTHER:
         // ignore
         delete msg;
+        msg = NULL;
         break;
     default:
         emit(sigUnhandledMSG, msg->getId());
         delete msg;
+        msg = NULL;
         break;
     }
 }
@@ -363,6 +368,7 @@ void DarknetBaseNode::handleMessageWhenUp(cMessage *msg) {
     } else if (msg->getKind() == UDP_I_ERROR) {
         DEBUG("Ignoring UDP error report" << endl);
         delete msg;
+        msg = NULL;
     } else {
         error("Unrecognized message (%s)%s", msg->getClassName(),
                 msg->getName());

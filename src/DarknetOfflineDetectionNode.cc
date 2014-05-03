@@ -80,6 +80,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
             sendDirectMessage(ack);
         }
         delete msg;
+        msg = NULL;
         break;
     }
     case DM_CON_SYNACK: {
@@ -96,6 +97,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
             }
         }
         delete msg;
+        msg = NULL;
         break;
     }
     case DM_CON_ACK: {
@@ -104,6 +106,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
             addActivePeer(msg->getSrcNodeID());
         }
         delete msg;
+        msg = NULL;
         break;
     }
     default:
@@ -150,6 +153,7 @@ void DarknetOfflineDetectionNode::handleRcvAck(DarknetMessage* msg) {
         rcvack_waiting.erase(orig_mID);
     }
     delete msg;
+    msg = NULL;
 }
 
 void DarknetOfflineDetectionNode::sendRcvAck(DarknetMessage* msg) {
@@ -202,6 +206,7 @@ if (dm != NULL and dm->hasPar("origMsgID")
         rcvack_waiting.erase(msgID);
 
         delete dm;
+        dm = NULL;
     }
 }
 }

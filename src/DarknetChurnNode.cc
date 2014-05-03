@@ -96,6 +96,7 @@ void DarknetChurnNode::handleIncomingMessage(DarknetMessage *msg,
     if (msg->getType() == DM_PING) {
         // We don't need this anymore, RCVACK is already sent
         delete msg;
+        msg = NULL;
     } else {
         DarknetOfflineDetectionNode::handleIncomingMessage(msg, sender);
     }
@@ -107,6 +108,7 @@ void DarknetChurnNode::handleUDPMessage(cMessage* msg) {
     } else {
         // Received UDP packet while offline: Discard
         delete msg;
+        msg = NULL;
     }
 }
 

@@ -18,10 +18,10 @@
 
 #include "DarknetSimpleNode.h"
 
-class DarknetOfflineDetectionNode: public DarknetSimpleNode {
+class DarknetOfflineDetectionNode: public DarknetBaseNode {
 public:
     DarknetOfflineDetectionNode() :
-            DarknetSimpleNode::DarknetSimpleNode(), resendTimerMean(0), resendTimerVariance(
+            DarknetBaseNode::DarknetBaseNode(), resendTimerMean(0), resendTimerVariance(
                     0), resendCounter(0), rcvack_waiting() {
     }
     ;

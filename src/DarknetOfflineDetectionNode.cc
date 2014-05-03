@@ -119,7 +119,7 @@ void DarknetOfflineDetectionNode::handleIncomingMessage(DarknetMessage *msg,
 }
 
 void DarknetOfflineDetectionNode::addActivePeer(std::string nodeId) {
-    DarknetPeer* peer = friendsByID.at(peerId);
+    DarknetPeer* peer = friendsByID.at(nodeId);
     if (not peer->connected) {
         peer->connected = true;
         numConnected++;
